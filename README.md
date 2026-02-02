@@ -107,11 +107,11 @@ web主要使用流程：
 5. 点击侧边栏的**卸载模型**，完成模型卸载。
 
 如下方所示：
-![页面效果展示](./templates/assets/image1.png)
-![页面效果展示](./templates/assets/image2.png)
+![页面效果展示](./vllm_pangu_web/templates/assets/image1.png)
+![页面效果展示](./vllm_pangu_web/templates/assets/image2.png)
 
 对话效果显示：
-![页面效果展示](./templates/assets/image3.png)
+![页面效果展示](./vllm_pangu_web/templates/assets/image3.png)
 
 ### 3.2 提供脚本功能
 
