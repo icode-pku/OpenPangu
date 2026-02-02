@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盘古大模型 - 昇腾NPU对话推理</title>
+    <link rel="stylesheet" href="/templates/css/style.css">
+    <link rel="stylesheet" href="/templates/css/responsive.css">
+    <!-- Chart.js CDN -->
+    <script src="/templates/js/chart.umd.min.js"></script>
+    <!-- Marked.js 和 Highlight.js CDN -->
+    <script src="/templates/js/marked.min.js"></script>
+    <link rel="stylesheet" href="/templates/css/github-dark.min.css">
+    <script src="/templates/js/highlight.min.js"></script>
+    
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar" id="sidebar">
+            <!-- 模型配置区域 -->
+            <div class="model-config">
+                <div class="config-title">
+                    <span>⚙️</span>
+                    模型配置
+                </div>
+
+                <!-- 模型路径配置 -->
+                <div class="config-group">
+                    <label class="config-label" for="modelPath">
+                        <span>📂</span>
+                        原始模型加载路径
+                    </label>
+                    <input type="text" class="config-input" id="modelPath"
+                        placeholder="例如: /opt/pangu/openPangu-Embedded-7B-V1.1"
+                        value="/opt/pangu/openPangu-Embedded-7B-V1.1">
+                    <div class="config-hint">原始模型文件所在目录</div>
+                </div>
+
+                <!-- 量化路径配置 -->
+                <div class="config-group">
+                    <label class="config-label" for="quantizedPath">
+                        <span>🔢</span>
+                        量化模型加载路径
+                    </label>
+                    <input type="text" class="config-input" id="quantizedPath"
+                        placeholder="例如: /opt/pangu/openPangu-Embedded-7B-V1.1-W8A8-Dynamic-Per-Token"
+                        value="/opt/pangu/openPangu-Embedded-7B-V1.1-W8A8-Dynamic-Per-Token">
+                    <div class="config-hint">量化后的模型加载目录</div>
+                </div>
+
+                <!-- 张量并行度配置 -->
+                <div class="config-group">
+                    <label class="config-label" for="tensorParallel">
+                        <span>⚡</span>
+                        张量并行度 (TP)
+                    </label>
+                    <select class="config-select" id="tensorParallel">
+                        <option value="1">TP=1 (单卡)</option>
+                        <option value="2">TP=2</option>
+                        <option value="4" selected>TP=4</option>
+                        <option value="8">TP=8</option>
+                    </select>
+                    <div class="config-hint">并行度越高，推理速度越快</div>
+                </div>
+
+                <!-- 高级配置 -->
+                <div class="config-group advanced-config">
+                    <div class="config-header">
+                        <button class="toggle-btn" id="advancedToggle" onclick="toggleAdvancedConfig()">
+                            <span class="icon">🔧</span>
+                            <span class="title-text">高级配置</span>
+                            <span id="advancedArrow">▼</span>
+                        </button>
+                    </div>
+                    <div class="advanced-options" id="advancedOptions" style="display: none;">
+                        <div class="config-subgroup">
+                            <label>最大批处理Token数</label>
+                            <input type="number" class="config-input-sm" id="maxBatchTokens" value="16384" min="128" max="32768">
+                        </div>
+                        <div class="config-subgroup">
+                            <label>最大并发请求数</label>
+                            <input type="number" class="config-input-sm" id="maxNumSeqs" value="32" min="1" max="256">
+                        </div>
+                        <div class="config-subgroup">
+                            <label>最大序列长度数</label>
+                            <input type="number" class="config-input-sm" id="maxSeqLength" value="4096" min="512" max="8192">
+                        </div>
+                        <!-- <div class="config-subgroup">
+                            <label>量化校准样本数</label>
+                            <input type="number" class="config-input-sm" id="numCalibrationSamples" value="512" min="128" max="512">
+                        </div> -->
+                        <div class="config-subgroup">
+                            <label>NPU内存利用率</label>
+                            <input type="range" class="config-range" id="gpuMemoryUtil" min="10" max="100"
+                                value="90">
+                            <span id="gpuMemoryValue">90%</span>
+                        </div>
+                    </div>
+                    
+
+                    <!-- 保存配置按钮 -->
+                    <button class="config-save-btn" onclick="saveModelConfig()">
+                        <span>💾</span>
+                        保存配置
+                    </button>
+                </div>
+
+                <!-- 模型状态区域 -->
+                <div class="model-status" id="modelStatus">
+                    <span class="status-indicator status-unloaded" id="statusIndicator"></span>
+                    <span id="statusText">模型未加载</span>
+                    <div class="status-details" id="statusDetails">请选择模型加载</div>
+                    <div class="quantization-status" id="quantizationStatus"></div>
+                </div>
+
+                <!-- 模型控制区域 -->
+                <div class="model-controls">
+                    <div class="control-group">
+                        <div class="control-group-title">VLLM 模型加载</div>
+                        <button class="control-btn vllm" onclick="loadCustomModel()"
+                                title="使用当前配置加载全精度模型">
+                            🚀 加载全精度模型
+                        </button>
+                        <button class="control-btn vllm" onclick="loadCustomQuantizedModel()"
+                                title="使用当前配置加载量化模型">
+                            🚀 加载量化模型(W8A8)
+                        </button>
+                    </div>
+
+                    <!-- <div class="quantization-controls">
+                        <div class="control-group-title">模型量化工具</div>
+                        <button class="quantization-btn" id="quantizationBtn" onclick="quantizeFromConfig()">
+                            ⚡ 量化模型(W8A8)
+                        </button>
+                        <div class="quantization-progress" id="quantizationProgress" style="display: none;">
+                            <div>量化进行中...</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="quantizationProgressFill"></div>
+                            </div>
+                            <div id="quantizationStatusText">准备中...</div>
+                        </div>
+                    </div> -->
+
+                    <div class="control-group">
+                        <div class="control-group-title">模型管理</div>
+                        <button class="control-btn" id="unloadBtn" onclick="unloadModel()">
+                            🗑️ 卸载模型
+                        </button>
+                        <button class="control-btn" id="checkQuantizationBtn" onclick="checkQuantizationModelStatus()">
+                            🔍 检查量化模型路径
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 推理指标监控 -->
+                <div class="metrics-panel">
+                    <div class="metrics-title">
+                        <span>📊</span>
+                        推理指标监控
+                    </div>
+                    <div class="metrics-list" id="metricsList">
+                        <div class="metric-item">
+                            <div class="metric-label">TTFT</div>
+                            <div class="metric-value" id="metricTTFT">- ms</div>
+                            <div class="metric-desc">首Token时间</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">ITL</div>
+                            <div class="metric-value" id="metricITL">- ms</div>
+                            <div class="metric-desc">平均Token间延迟</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">TPS</div>
+                            <div class="metric-value" id="metricTPS">-</div>
+                            <div class="metric-desc">Tokens/秒</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">E2E延迟</div>
+                            <div class="metric-value" id="metricE2E">- ms</div>
+                            <div class="metric-desc">端到端延迟</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">RPS</div>
+                            <div class="metric-value" id="metricRPS">-</div>
+                            <div class="metric-desc">请求数/秒</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Token数</div>
+                            <div class="metric-value" id="metricTokens">-</div>
+                            <div class="metric-desc">本次生成</div>
+                        </div>
+                    </div>
+                    <div class="metrics-chart">
+                        <canvas id="metricsChart" width="300" height="150"></canvas>
+                    </div>
+                </div>
+
+                <!-- 对话列表区域 -->
+                <button class="new-chat-btn" id="newChatBtn" onclick="startNewConversation()">
+                    <span>+</span>
+                    新对话
+                </button>
+
+                <div class="conversations-list" id="conversationsList">
+                    <!-- 对话列表会在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+        <!-- 主聊天区域 -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <div>
+                    <span class="chat-title" id="chatTitle">新对话</span>
+                    <span class="model-badge" id="modelBadge">未加载</span>
+                </div>
+                <div class="header-controls">
+                    <button class="metrics-refresh-btn" onclick="refreshMetrics()" title="刷新指标">
+                        📊
+                    </button>
+                    <button class="metrics-clear-btn" onclick="clearMetrics()" title="清空指标">
+                        🧹
+                    </button>
+                    <button class="clear-history-btn" id="clearHistoryBtn", onclick="clearCurrentConversation()">清空历史</button>
+                </div>
+            </div>
+
+            <!-- 消息区域 -->
+            <div class="messages-container" id="messagesContainer">
+                 <!-- 添加进度条卡片 -->
+                <div class="metrics-card" id="metricsCard" style="display: none;">
+                    <div class="metrics-card-title">
+                        <span>📈</span>
+                        推理进度
+                        <button class="close-btn" onclick="hideMetricsCard()">×</button>
+                    </div>
+                    <div class="metrics-card-content">
+                        <div class="metrics-progress">
+                            <div class="progress-label">生成进度</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text" id="progressText">0%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="warning-message" id="warningMessage">
+                    ⚠️ 模型未加载，请先在侧边栏选择模型加载
+                </div>
+                <div class="message bot-message">
+                    <div class="message-avatar bot-avatar">AI</div>
+                    <div class="message-content">
+                        您好！我是盘古大模型，支持昇腾NPU推理和量化技术。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea class="chat-input" id="chatInput" placeholder="请先加载模型..." rows="1" disabled></textarea>
+                    <button class="send-button" id="sendButton" onclick="sendMessage()" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- 推理指标实时显示 -->
+                <div class="realtime-metrics" id="realtimeMetrics">
+                    <div class="realtime-item">
+                        <span class="realtime-label">实时TPS:</span>
+                        <span class="realtime-value" id="realtimeTPS">-</span>
+                    </div>
+                    <div class="realtime-item">
+                        <span class="realtime-label">已生成:</span>
+                        <span class="realtime-value" id="realtimeTokens">0 tokens</span>
+                    </div>
+                    <div class="realtime-item">
+                        <span class="realtime-label">耗时:</span>
+                        <span class="realtime-value" id="realtimeTime">0 ms</span>
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    <span>AI正在思考</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 量化对话框 -->
+    <div class="modal-overlay" id="quantizationModal">
+        <div class="modal-content">
+            <div class="modal-title">模型量化</div>
+            <div id="quantizationModalContent">
+                <p>请选择量化选项：</p>
+                <div style="margin: 16px 0;">
+                    <label>
+                        <input type="radio" name="quantizationBits" value="4" checked>
+                        BNB 4bit量化 (示例)
+                    </label>
+                    <br>
+                </div>
+                <p style="font-size: 12px; color: #666;">
+                    💡 量化过程可能需要几分钟到几十分钟，具体取决于模型大小和硬件性能。
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" id="cancelQuantizationBtn">取消</button>
+                <button class="modal-btn primary" id="startQuantizationBtn">开始量化</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/templates/js/app.js"></script>
+</body>
+
+</html>

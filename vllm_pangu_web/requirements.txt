@@ -1,0 +1,5 @@
+peft
+llmcompressor==0.8.0
+
+# 先安装llmcompressor 0.8.0，再安装transformers 4.57.1
+# transformers==4.57.1

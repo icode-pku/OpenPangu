@@ -1,0 +1,12 @@
+{
+  "model_path": "/opt/pangu/openPangu-Embedded-7B-V1.1",
+  "quantized_path": "/opt/pangu/openPangu-Embedded-7B-V1.1-W8A8-Dynamic-Per-Token",
+  "tensor_parallel": 1,
+  "max_batch_tokens": 4096,
+  "max_seqs": 32,
+  "gpu_memory_utilization": 0.9,
+  "quantization_bits": 8,
+  "quantization": "W8A8",
+  "max_sequence_length": 4096,
+  "num_calibration_samples": 512
+}
