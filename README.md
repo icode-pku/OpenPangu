@@ -8,7 +8,7 @@
 
 ## 一、从零构建镜像与容器环境：
 
-从零构建所需镜像与容器配置参照：[vllm_pangu_web/docker/README.md](./docker/README.md)
+从零构建所需镜像与容器配置参照：[vllm_pangu_web/docker/README.md](./vllm_pangu_web/docker/README.md)
 
 注：关于**盘古模型的下载**，可参考华为盘古模型官方gitcode仓库：
 1. openPangu-Embedded-7B-V1.1模型：
@@ -53,7 +53,7 @@ cd third_party/msit/msmodelslim
 bash install.sh
 ```
 
-关于盘古大模型openPangu-Embedded-1B\7B的W8A8量化功能的使用，详情参照：[vllm_pangu_web/quantization/README.md](./quantization/README.md)
+关于盘古大模型openPangu-Embedded-1B\7B的W8A8量化功能的使用，详情参照：[vllm_pangu_web/quantization/README.md](./vllm_pangu_web/quantization/README.md)
 
 **服务端启动：**
 在服务端启动之前，需自定义映射到本地ip端口1040。方法如下：
@@ -118,7 +118,7 @@ web主要使用流程：
 
 1.W8A8量化
 
-支持盘古大模型openPangu-Embedded-1B\7B的W8A8量化，详情参照：[vllm_pangu_web/quantization/README.md](./quantization/README.md)
+支持盘古大模型openPangu-Embedded-1B\7B的W8A8量化，详情参照：[vllm_pangu_web/quantization/README.md](./vllm_pangu_web/quantization/README.md)
 
 ### 4.3 性能测试统计
 
