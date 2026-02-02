@@ -1,0 +1,3 @@
+recursive-include msprechecker/presets/ *.yml
+recursive-include msprechecker/presets/ *.yaml
+recursive-include msprechecker/collectors/ *.yaml

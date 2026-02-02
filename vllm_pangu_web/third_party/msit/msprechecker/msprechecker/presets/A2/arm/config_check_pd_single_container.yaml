@@ -1,0 +1,249 @@
+ref:
+  - from: deployment/mindie_service_single_container.yaml[1].spec.template.spec.containers[0].env
+    select: "${.value}"
+    where: "${.name} == 'MINDIE_MS_P_RATE'"
+    as: p_rate
+  - from: deployment/mindie_service_single_container.yaml[1].spec.template.spec.containers[0].env
+    select: "${.value}"
+    where: "${.name} == 'MINDIE_MS_D_RATE'"
+    as: d_rate
+  - from: deployment/mindie_service_single_container.yaml[1].spec.template.spec.volumes
+    select: "${.hostPath.path}"
+    where: "${.name} == 'model-path'"
+    as: host_model_path
+  - from: deployment/mindie_service_single_container.yaml[1].spec.template.spec.containers[0].volumeMounts
+    select: "${.mountPath}"
+    where: "${.name} == 'model-path'"
+    as: global_container_model_path
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].modelWeightPath
+    as: config_model_weight_path
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].dp
+    as: dp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].tp
+    as: tp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].cp
+    as: cp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].sp
+    as: sp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].pp
+    as: pp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].worldSize
+    as: world_size
+
+ref.p_rate:
+  expected:
+    if: "${ref.d_rate} == '0'"
+    then:
+      case:
+        type: eq
+        value: "0"
+      reason: "MINDIE_MS_P_RATE和MINDIE_MS_D_RATE需要同时为0，表示PD配比自动计算；或者同时不为0，由用户指定具体配比"
+    else:
+      if: "${ref.p_rate} == '0'"
+      then:
+        case: false
+        reason: "MINDIE_MS_P_RATE和MINDIE_MS_D_RATE需要同时为0，表示PD配比自动计算；或者同时不为0，由用户指定具体配比"
+      else:
+        case: "int(${ref.p_rate}) + int(${ref.d_rate}) <= int(${global.npu_count})"
+        reason: "MINDIE_MS_P_RATE和MINDIE_MS_D_RATE之和不能大于单机NPU总卡数"
+
+ref.host_model_path:
+  expected:
+    case:
+      type: path
+      value: "'exists'"
+    reason: "deployment/mindie_service_single_container.yaml中，model-path挂载的宿主机路径需要存在"
+    severity: high
+
+ref.config_model_weight_path:
+  expected:
+    case:
+      type: eq
+      value: "${ref.global_container_model_path}"
+    reason: "conf/config.json中modelWeightPath需要和deployment/mindie_service_single_container.yaml中挂载在容器中的权重路径一致"
+    severity: high
+
+ref.world_size:
+  expected:
+    case: "int(${ref.dp}) * int(${ref.tp}) * int(${ref.cp}) * int(${ref.pp}) == int(${ref.world_size})"
+    reason: "并行策略要求保证dp * tp * cp * pp = worldSize，其中没配置的并行策略默认值为1"
+    severity: high
+
+ref.pp:
+  expected:
+    type: eq
+    value: 1
+  reason: "pp取值只能等于1"
+  severity: high
+
+ref.sp:
+  expected:
+    type: enum
+    value: [1, "${ref.tp}"]
+  reason: "sp取值只能等于1或者等于tp取值"
+  severity: high
+
+conf/ms_controller.json:
+  deploy_mode:
+    expected:
+      type: eq
+      value: "'pd_disaggregation_single_container'"
+    reason: "单机PD分离场景下，deploy_mode应该是pd_disaggregation_single_container"
+    severity: high
+  tls_config:
+    request_coordinator_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    request_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    http_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    cluster_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    etcd_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+
+conf/ms_coordinator.json:
+  digs_scheduler_config:
+    deploy_mode:
+      expected:
+        type: eq
+        value: "'pd_disaggregation_single_container'"
+      reason: "单机PD分离场景下，deploy_mode应该是pd_disaggregation_single_container"
+      severity: high
+  tls_config:
+    controller_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    request_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    mindie_client_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    mindie_mangment_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+
+conf/config.json:
+  ServerConfig:
+    httpsEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    inferMode:
+      expected:
+        type: eq
+        value: "'dmi'"
+      reason: "单机PD分离场景下，inferMode应该是dmi"
+      severity: high
+    interCommTLSEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+  BackendConfig:
+    interNodeTLSEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    npuDeviceIds[0]:
+      expected:
+        len: ${ref.world_size}
+        contains_all: null
+    ModelDeployConfig:
+      ModelConfig:
+        - worldSize:
+            expected:
+              type: range
+              value: [1, 8]
+            reason: "Atlas 800I A2服务器上，单机PD分离场景下，worldSize取值范围为1到8"
+            severity: high
+
+deployment/mindie_service_single_container.yaml:
+  - null
+  - spec:
+      replicas:
+        expected:
+          type: eq
+          value: 1
+        reason: "表示拉起的pod数，单机PD分离中P和D的server实例在同pod中，该值需要等于1"
+        severity: high
+      template:
+        spec:
+          containers[0]:
+            resources:
+              requests:
+                huawei.com/Ascend910:
+                  expected:
+                    type: range
+                    value: ["${conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].worldSize}", 8]
+                  reason: "Atlas 800I A2环境上，单机PD分离场景下，huawei.com/Ascend910应该大于等于worldSize且小于等于8"
+                  severity: high
+              limits:
+                huawei.com/Ascend910:
+                  expected:
+                    type: range
+                    value: ["${conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].worldSize}", 8]
+                  reason: "Atlas 800I A2环境上，单机PD分离场景下，huawei.com/Ascend910应该大于等于worldSize且小于等于8"
+                  severity: high
+            env:
+              expected:
+                contains_all:
+                  - case: "${.name} == 'MINDIE_LOG_LEVEL' and (${.value} == 'INFO' or ${.value} == 'info')"
+                    suggest: "- name: MINDIE_LOG_LEVEL\n  value: 'INFO'"
+                    reason: "MINDIE日志等级建议设置为INFO或info"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_LOG_TO_FILE' and (${.value} == '1' or ${.value} == 'true')"
+                    suggest: "- name: MINDIE_LOG_TO_FILE\n  value: '1'"
+                    reason: "建议将MindIE日志写入文件，便于排查问题"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_LOG_TO_STDOUT' and (${.value} == '1' or ${.value} == 'true')"
+                    suggest: "- name: MINDIE_LOG_TO_STDOUT\n  value: '1'"
+                    reason: "建议将MindIE日志打屏，便于通过查看k8s日志查看程序运行状态"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_MS_GEN_SERVER_PORT' and (${.value} == 'false' or ${.value} == 'true')"
+                    suggest: "- name: MINDIE_MS_GEN_SERVER_PORT\n  value: 'true'"
+                    reason: "MINDIE_MS_GEN_SERVER_PORT应该是true或false，表示是否自动生成多个server示例端口"
+                    severity: high

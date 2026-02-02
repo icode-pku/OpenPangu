@@ -1,0 +1,558 @@
+ref:
+  - from: mindie_server_prefill_config.BackendConfig.ModelDeployConfig.ModelConfig[0].dp
+    as: p_dp
+    default: 1
+  - from: mindie_server_prefill_config.BackendConfig.ModelDeployConfig.ModelConfig[0].tp
+    as: p_tp
+    default: 1
+  - from: mindie_server_prefill_config.BackendConfig.ModelDeployConfig.ModelConfig[0].cp
+    as: p_cp
+    default: 1
+  - from: mindie_server_prefill_config.BackendConfig.ModelDeployConfig.ModelConfig[0].sp
+    as: p_sp
+    default: 1
+  - from: mindie_server_prefill_config.BackendConfig.ModelDeployConfig.ModelConfig[0].pp
+    as: p_pp
+    default: 1
+  - from: mindie_server_prefill_config.BackendConfig.ModelDeployConfig.ModelConfig[0].moe_ep
+    as: p_moe_ep
+    default: 1
+  - from: mindie_server_prefill_config.BackendConfig.ModelDeployConfig.ModelConfig[0].moe_tp
+    as: p_moe_tp
+    default: 1
+  - from: deploy_config.single_p_instance_pod_num
+    as: single_p_instance_pod_num
+  - from: deploy_config.p_pod_npu_num
+    as: p_pod_npu_num
+  - from: mindie_server_decode_config.BackendConfig.ModelDeployConfig.ModelConfig[0].dp
+    as: d_dp
+    default: 1
+  - from: mindie_server_decode_config.BackendConfig.ModelDeployConfig.ModelConfig[0].tp
+    as: d_tp
+    default: 1
+  - from: mindie_server_decode_config.BackendConfig.ModelDeployConfig.ModelConfig[0].cp
+    as: d_cp
+    default: 1
+  - from: mindie_server_decode_config.BackendConfig.ModelDeployConfig.ModelConfig[0].sp
+    as: d_sp
+    default: 1
+  - from: mindie_server_decode_config.BackendConfig.ModelDeployConfig.ModelConfig[0].pp
+    as: d_pp
+    default: 1
+  - from: mindie_server_decode_config.BackendConfig.ModelDeployConfig.ModelConfig[0].moe_ep
+    as: d_moe_ep
+    default: 1
+  - from: mindie_server_decode_config.BackendConfig.ModelDeployConfig.ModelConfig[0].moe_tp
+    as: d_moe_tp
+    default: 1
+  - from: deploy_config.single_d_instance_pod_num
+    as: single_d_instance_pod_num
+  - from: deploy_config.d_pod_npu_num
+    as: d_pod_npu_num
+  - from: mindie_server_prefill_config.BackendConfig.ModelDeployConfig.maxSeqLen
+    as: max_seq_len
+
+ref.p_dp:
+  expected:
+    case: "${ref.p_dp} * ${ref.p_tp} * ${ref.p_cp} * ${ref.p_pp} == ${ref.single_p_instance_pod_num} * ${ref.p_pod_npu_num}"
+    reason: "P实例并行策略要求保证dp * tp * cp * pp = p_pod_npu_num * single_p_instance_pod_num，其中没配置的并行策略默认值为1"
+    severity: high
+
+ref.p_pp:
+  expected:
+    type: eq
+    value: 1
+  reason: "P实例并行策略中，pp取值只能等于1"
+  severity: high
+
+ref.p_sp:
+  expected:
+    type: enum
+    value: [1, "${ref.p_tp}"]
+    reason: "P实例并行策略中，sp取值只能等于1或者等于tp取值"
+    severity: high
+
+ref.max_seq_len:
+  expected:
+    if: "${ref.max_seq_len} <= 18000"
+    then:
+      case: "${ref.p_dp} == 2 and ${ref.p_tp} == 8 and ${ref.p_sp} == 1"
+      reason: "maxSeqLen小于等于18000时,P实例并行策略建议设置为：dp=2, tp=8, sp=1，其中没配置的并行策略默认值为1"
+      severity: low
+    else:
+      case: "${ref.p_cp} == 2 and ${ref.p_tp} == 8 and ${ref.p_sp} == 8"
+      reason: "maxSeqLen大于18000时，D实例并行策略建议设置为：cp=2, tp=8, sp=8，其中没配置的并行策略默认值为1"
+      severity: low
+
+ref.p_moe_ep:
+  expected:
+    case: "${ref.p_moe_ep} * ${ref.p_moe_tp} == ${ref.single_p_instance_pod_num} * ${ref.p_pod_npu_num}"
+    reason: "P实例并行策略中，专家并行策略需要满足moe_ep * moe_tp = p_pod_npu_num * single_p_instance_pod_num，其中没配置的并行策略默认值为1"
+    severity: high
+
+ref.p_moe_tp:
+  expected:
+    if: "${ref.max_seq_len} <= 18000"
+    then:
+      case: "${ref.p_moe_ep} == 4 and ${ref.p_moe_tp} == 4"
+      reason: "maxSeqLen小于等于18000时，P实例专家并行策略建议设置为：moe_ep=4, moe_tp=4, 其中没配置的并行策略默认值为1"
+      severity: low
+    else:
+      case: "${ref.p_moe_ep} == 16 and ${ref.p_moe_tp} == 1"
+      reason: "maxSeqLen大于18000时，P实例专家并行策略建议设置为：moe_ep=16, moe_tp=1, 其中没配置的并行策略默认值为1"
+      severity: low
+
+ref.d_dp:
+  expected:
+    case: "${ref.d_tp} == 1 and ${ref.d_cp} == 1 and ${ref.d_pp} == 1 and ${ref.d_sp} == 1 and ${ref.d_dp} == ${ref.single_d_instance_pod_num} * ${ref.d_pod_npu_num}"
+    reason: "D实例并行策略要求保证dp = d_pod_npu_num * single_d_instance_pod_num, tp = 1, cp = 1, pp = 1, sp = 1，其中没配置的并行策略默认值为1"
+    severity: high
+
+ref.d_moe_ep:
+  expected:
+    case: "${ref.d_moe_ep} == ${ref.single_d_instance_pod_num} * ${ref.d_pod_npu_num} and ${ref.d_moe_tp} == 1"
+    reason: "D实例并行策略中，专家并行策略需要满足moe_ep = d_pod_npu_num * single_d_instance_pod_num, moe_tp = 1，其中没配置的并行策略默认值为1"
+    severity: high
+
+deploy_config:
+  p_instances_num:
+    expected:
+      type: ">="
+      value: 1
+    reason: "p_instances_num A2场景应该大于等于1"
+    severity: high
+  d_instances_num:
+    expected:
+      type: ">="
+      value: 1
+    reason: "d_instances_num A2场景应该大于等于1"
+    severity: high
+  single_p_instance_pod_num:
+    expected:
+      type: ">="
+      value: 2
+    reason: "single_p_instance_pod_num A2场景应该大于等于2"
+    severity: high
+  single_d_instance_pod_num:
+    expected:
+      type: ">="
+      value: 4
+    reason: "single_d_instance_pod_num A2场景应该大于等于4"
+    severity: high
+  p_pod_npu_num:
+    expected:
+      type: eq
+      value: 8
+    reason: "p_pod_npu_num A2场景应该是8"
+    severity: high
+  d_pod_npu_num:
+    expected:
+      type: eq
+      value: 8
+    reason: "d_pod_npu_num A2场景应该是8"
+    severity: high
+  prefill_distribute_enable:
+    expected:
+      case: alert
+      reason: "该参数需要以实际MindIE版本配套的user_config.json中该参数默认值为准"
+  decode_distribute_enable:
+    expected:
+      type: eq
+      value: 1
+    reason: "decode_distribute_enable A2场景应该是1"
+    severity: high
+  hardware_type:
+    expected:
+      type: eq
+      value: "'800I_A2'"
+    reason: "A2场景应该是800I_A2，在版本配套的config没有hardware_type字段时忽略此检查"
+    severity: medium
+  mindie_env_path:
+    expected:
+      type: eq
+      value: "'./conf/mindie_env.json'"
+    reason: "A2场景下默认应该是./conf/mindie_env.json，在版本配套的config没有mindie_env_path字段时忽略此检查"
+    severity: low
+
+mindie_ms_controller_config:
+  deploy_mode:
+    expected:
+      type: enum
+      value: ["'pd_separate'", "'pd_disaggregation'"]
+    reason: "deploy_mode应该是pd_separate或pd_disaggregation"
+    severity: high
+  digs_prefill_slo:
+    expected:
+      type: eq
+      value: 1000
+    reason: "digs_prefill_slo A2场景建议值为1000"
+    severity: low
+  digs_decode_slo:
+    expected:
+      type: eq
+      value: 50
+    reason: "digs_decode_slo A2场景建议值为50"
+    severity: low
+  multi_node_infer_config:
+    multi_node_infer_enable:
+      expected:
+        type: eq
+        value: true
+      reason: "multi_node_infer_enable应该是true"
+      severity: high
+
+mindie_ms_coordinator_config:
+  http_config:
+    http_timeout_seconds:
+      expected:
+        type: eq
+        value: 10
+      reason: "http_timeout_seconds建议值为10，表示coordinator侧HTTP通信超时时间"
+      severity: low
+    keep_alive_seconds:
+      expected:
+        type: eq
+        value: 180
+      reason: "keep_alive_seconds建议值为180，表示coordinator侧长链接的保活检查时间"
+      severity: low
+  request_limit:
+    single_node_max_requests:
+      expected:
+        type: eq
+        value: 4096
+      reason: "single_node_max_requests建议为4096，表示单个server节点可处理的最大请求数"
+      severity: medium
+    max_requests:
+      expected:
+        type: ">="
+        value: ${mindie_ms_coordinator_config.request_limit.single_node_max_requests} * ${deploy_config.p_instances_num} + 1000
+      reason: "max_requests建议满足p_instances_num*single_node_max_requests+1000，表示可处理的最大请求数"
+      severity: medium
+  exception_config:
+    first_token_timeout:
+      expected:
+        if: "${.} != 0"
+        then:
+          if: "${.} < 0 or ${.} > 3600"
+          then:
+            case: false
+            reason: "first_token_timeout取值范围为[0, 3600]，0表示不限制超时时间，建议设置大于等于600"
+            severity: high
+          else:
+            case:
+              type: ">="
+              value: 600
+            reason: "first_token_timeout建议设置大于等于600，且不超过3600（需要关闭超时时间限制可以设置为0），该参数设置过小可能导致请求超时"
+            severity: low
+    infer_timeout:
+      expected:
+        if: "${.} != 0"
+        then:
+          if: "${.} < 0 or ${.} > 65535"
+          then:
+            case: false
+            reason: "infer_timeout取值范围为[0, 65535]，0表示不限制超时时间"
+            severity: high
+          else:
+            case:
+              type: ">="
+              value: 0.05 * ${ref.max_seq_len}
+            reason: "infer_timeout建议设置大于等于0.05 * max_seq_len，且不超过65535（需要关闭超时时间限制可以设置为0），该参数设置过小可能导致请求超时"
+            severity: low
+
+mindie_server_prefill_config:
+  ServerConfig:
+    maxLinkNum:
+      expected:
+        type: eq
+        value: 4096
+      reason: "maxLinkNum建议设置为4096，表示EndPoint的最大并发请求处理数"
+      severity: low
+    inferMode:
+      expected:
+        type: eq
+        value: "'dmi'"
+      reason: "inferMode在PD分离场景应该是dmi"
+      severity: high
+    tokenTimeout:
+      expected:
+        if: "${.} != 0"
+        then:
+          if: "${.} < 0 or ${.} > 3600"
+          then:
+            case: false
+            reason: "tokenTimeout取值范围为[0, 3600]，建议设置大于等于60"
+            severity: high
+          else:
+            case:
+              type: ">="
+              value: 60
+            reason: "tokenTimeout建议设置大于等于60，且不超过3600，该参数设置过小可能导致请求超时"
+            severity: low
+    e2eTimeout:
+      expected:
+        if: "${.} != 0"
+        then:
+          if: "${.} < 0 or ${.} > 65535"
+          then:
+            case: false
+            reason: "e2eTimeout取值范围为[0, 65535]，建议设置大于等于600"
+            severity: high
+          else:
+            case:
+              type: ">="
+              value: 600
+            reason: "e2eTimeout建议设置大于等于600，且不超过65535，该参数设置过小可能导致请求超时"
+            severity: low
+    distDPServerEnabled:
+      expected:
+        case: alert
+        reason: "该参数需要以实际MindIE版本配套的user_config.json中该参数默认值为准"
+  BackendConfig:
+    npuDeviceIds:
+      expected:
+        type: eq
+        value: [[0, 1, 2, 3, 4, 5, 6, 7]]
+      reason: "P节点中npuDeviceIds应该设置为[[0,1,2,3,4,5,6,7]]"
+      severity: high
+    tokenizerProcessNumber:
+      expected:
+        type: eq
+        value: 1
+      reason: "tokenizerProcessNumber建议设置为1"
+      severity: medium
+    multiNodesInferEnabled:
+      expected:
+        case: alert
+        reason: "该参数需要以实际MindIE版本配套的user_config.json中该参数默认值为准"
+    ModelDeployConfig:
+      maxSeqLen:
+        expected:
+          type: ">="
+          value: ${mindie_server_prefill_config.BackendConfig.ModelDeployConfig.maxInputTokenLen}
+        reason: "maxSeqLen应该大于等于maxInputTokenLen，表示输入token加输出token的上限"
+        severity: high
+      maxInputTokenLen:
+        expected:
+          type: ">="
+          value: 1
+        reason: "maxInputTokenLen应该大于等于1，表示输入token的上限"
+        severity: high
+      ModelConfig:
+        - modelInstanceType:
+            expected:
+              type: eq
+              value: "'Standard'"
+            reason: "modelInstanceType应该是Standard"
+            severity: high
+          worldSize:
+            expected:
+              type: eq
+              value: 8
+            reason: "worldSize应该是8"
+            severity: high
+          modelCutPolicy:
+            expected:
+              type: eq
+              value: "'custom'"
+            reason: "modelCutPolicy需要设置为custom"
+            severity: high
+          plugin_params:
+            expected:
+              if: "${ref.max_seq_len} <= 68000"
+              then:
+                case:
+                  type: eq
+                  value: "'{\"plugin_type\":\"mtp\",\"num_speculative_tokens\": 1}'"
+                reason: "在上下文长度（maxSeqLen）在68000以下场景，建议开启MTP特性，值为\"{\"plugin_type\":\"mtp\",\"num_speculative_tokens\": 1}\""
+                severity: low
+              else:
+                case: absent
+                reason: "在上下文长度（maxSeqLen）大于68000场景，由于显存不充足，建议不开启MTP特性，需要移除plugin_type中的mtp特性"
+                severity: low
+    ScheduleConfig:
+      maxPrefillBatchSize:
+        expected:
+          type: eq
+          value: 16
+        reason: "maxPrefillBatchSize建议设置为16，表示prefill的最大batch size"
+        severity: low
+      maxPrefillTokens:
+        expected:
+          type: ">="
+          value: ${mindie_server_prefill_config.BackendConfig.ModelDeployConfig.maxInputTokenLen}
+        reason: "maxPrefillTokens需要设置大于maxInputTokenLen，表示prefill最大token数"
+        severity: high
+          
+mindie_server_decode_config:
+  ServerConfig:
+    maxLinkNum:
+      expected:
+        type: eq
+        value: 256
+      reason: "maxLinkNum建议设置为256，表示EndPoint的最大并发请求处理数"
+      severity: low
+    fullTextEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "D节点中fullTextEnabled需要设置为false"
+      severity: high
+    inferMode:
+      expected:
+        type: eq
+        value: "'dmi'"
+      reason: "inferMode在PD分离场景应该是dmi"
+      severity: high
+    tokenTimeout:
+      expected:
+        if: "${.} != 0"
+        then:
+          if: "${.} < 0 or ${.} > 3600"
+          then:
+            case: false
+            reason: "tokenTimeout取值范围为[0, 3600]，建议设置大于等于60"
+            severity: high
+          else:
+            case:
+              type: ">="
+              value: 60
+            reason: "tokenTimeout建议设置大于等于60，且不超过3600，该参数设置过小可能导致请求超时"
+            severity: low
+    e2eTimeout:
+      expected:
+        if: "${.} != 0"
+        then:
+          if: "${.} < 0 or ${.} > 65535"
+          then:
+            case: false
+            reason: "e2eTimeout取值范围为[0, 65535]，建议设置大于等于600"
+            severity: high
+          else:
+            case:
+              type: ">="
+              value: 600
+            reason: "e2eTimeout建议设置大于等于600，且不超过65535，该参数设置过小可能导致请求超时"
+            severity: low
+    distDPServerEnabled:
+      expected:
+        type: eq
+        value: true
+      reason: "D节点为分布式，distDPServerEnabled需要设置为true"
+      severity: high
+  BackendConfig:
+    npuDeviceIds:
+      expected:
+        type: eq
+        value: [[0]]
+      reason: "D节点npuDeviceIds应该是[[0]]"
+      severity: high
+    tokenizerProcessNumber:
+      expected:
+        type: eq
+        value: 1
+      reason: "tokenizerProcessNumber建议设置为1"
+      severity: medium
+    multiNodesInferEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "multiNodesInferEnabled应该是false"
+      severity: high
+    ModelDeployConfig:
+      maxSeqLen:
+        expected:
+          type: eq
+          value: ${mindie_server_prefill_config.BackendConfig.ModelDeployConfig.maxSeqLen}
+        reason: "D节点maxSeqLen应该等于P节点maxSeqLen"
+        severity: high
+      maxInputTokenLen:
+        expected:
+          type: eq
+          value: ${mindie_server_prefill_config.BackendConfig.ModelDeployConfig.maxInputTokenLen}
+        reason: "D节点maxInputTokenLen应该等于P节点maxInputTokenLen"
+        severity: high
+      truncation:
+        expected:
+          type: eq
+          value: false
+        reason: "D节点中LLM部分的truncation需要设置为false"
+        severity: high
+      ModelConfig:
+        - modelInstanceType:
+            expected:
+              type: eq
+              value: "'Standard'"
+            reason: "modelInstanceType应该是Standard"
+            severity: high
+          worldSize:
+            expected:
+              type: eq
+              value: 1
+            reason: "worldSize应该是8"
+            severity: high
+          modelCutPolicy:
+            expected:
+              type: eq
+              value: "'custom'"
+            reason: "modelCutPolicy需要设置为custom"
+            severity: high
+          plugin_params:
+            expected:
+              if: "${ref.max_seq_len} <= 68000"
+              then:
+                case:
+                  type: eq
+                  value: "'{\"plugin_type\":\"mtp\",\"num_speculative_tokens\": 1}'"
+                reason: "在上下文长度（maxSeqLen）在68000以下场景，建议开启MTP特性，值为\"{\"plugin_type\":\"mtp\",\"num_speculative_tokens\": 1}\""
+                severity: low
+              else:
+                case: absent
+                reason: "在上下文长度（maxSeqLen）大于68000场景，由于显存不充足，建议不开启MTP特性，需要移除plugin_type中的mtp特性"
+                severity: low
+          models:
+            deepseekv2:
+              ep_level:
+                expected:
+                  type: eq
+                  value: 2
+                reason: "ep_level应该是2"
+                severity: high
+              parallel_options:
+                hccl_moe_ep_buffer:
+                  expected:
+                    type: eq
+                    value: 1152
+                  reason: "hccl_moe_ep_buffer推荐设置为1152，需要依据D节点maxBatchSize值动态调整"
+                  severity: low
+                hccl_moe_tp_buffer:
+                  expected:
+                    type: eq
+                    value: 64
+                  reason: "hccl_moe_tp_buffer推荐设置为64"
+                  severity: low
+    ScheduleConfig:
+      distributedEnable:
+        expected:
+          type: eq
+          value: true
+        reason: "distributedEnable应该是true"
+        severity: high
+      maxBatchSize:
+        expected:
+          type: eq
+          value: 64
+        reason: "maxBatchSize建议设置为64，表示decode的最大batch size"
+        severity: low
+      maxIterTimes:
+        expected:
+          type: range
+          value: [1, "${mindie_server_decode_config.BackendConfig.ModelDeployConfig.maxSeqLen}"]
+        reason: "maxIterTimes应该大于等于1小于等于maxSeqLen"
+        severity: high
+      maxQueueDelayMicroseconds:
+        expected:
+          type: eq
+          value: 5000
+        reason: "maxQueueDelayMicroseconds建议设置为5000，表示LLM模块的队列等待时间，可根据实际场景调整"
+        severity: low

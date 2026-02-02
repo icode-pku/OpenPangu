@@ -1,0 +1,242 @@
+ref:
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].dp
+    as: dp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].tp
+    as: tp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].cp
+    as: cp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].sp
+    as: sp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].pp
+    as: pp
+    default: 1
+  - from: conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].worldSize
+    as: world_size
+
+ref.world_size:
+  expected:
+    case: "int(${ref.dp}) * int(${ref.tp}) * int(${ref.cp}) * int(${ref.pp}) == int(${ref.world_size})"
+    reason: "并行策略要求保证dp * tp * cp * pp = worldSize，其中没配置的并行策略默认值为1"
+    severity: high
+
+ref.pp:
+  expected:
+    type: eq
+    value: 1
+  reason: "pp取值只能等于1"
+  severity: high
+
+ref.sp:
+  expected:
+    type: enum
+    value: [1, "${ref.tp}"]
+  reason: "sp取值只能等于1或者等于tp取值"
+  severity: high
+
+conf/ms_controller.json:
+  deploy_mode:
+    expected:
+      if: "${.} != 'pd_separate'"
+      then:
+        type: eq
+        value: "'pd_disaggregation'"  
+      else: null
+    reason: "多机PD分离场景下，deploy_mode应该是pd_separate或pd_disaggregation"
+    severity: high
+  tls_config:
+    request_coordinator_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    request_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    http_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    cluster_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    etcd_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+
+conf/ms_coordinator.json:
+  digs_scheduler_config:
+    deploy_mode:
+      expected:
+        if: "${.} != 'pd_separate'}"
+        then:
+          type: eq
+          value: "'pd_disaggregation'"  
+        else: null
+      reason: "多机PD分离场景下，deploy_mode应该是pd_separate或pd_disaggregation"
+      severity: high
+  tls_config:
+    controller_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    request_server_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    mindie_client_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    mindie_mangment_tls_enable:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+
+conf/config.json:
+  ServerConfig:
+    httpsEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    inferMode:
+      expected:
+        type: eq
+        value: "'dmi'"
+      reason: "PD分离场景下，inferMode应该是dmi"
+      severity: high
+    interCommTLSEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+  BackendConfig:
+    interNodeTLSEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    npuDeviceIds[0]:
+      expected:
+        len: ${ref.world_size}
+        contains_all: null
+    ModelDeployConfig:
+      ModelConfig:
+        - worldSize:
+            expected:
+              type: range
+              value: [1, 8]
+            reason: "Atlas 800I A2服务器上，worldSize取值范围为1到8，表示每个server示例用到卡数"
+            severity: high
+
+deployment/mindie_server.yaml:
+  - null
+  - spec:
+      replicas:
+        expected:
+          type: ">="
+          value: 2
+        reason: "表示拉起的pod数，因为至少存在一个P节点和一个D节点，不能小于2"
+        severity: high
+      template:
+        spec:
+          containers[0]:
+            resources:
+              requests:
+                huawei.com/Ascend910:
+                  expected:
+                    type: eq
+                    value: ${conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].worldSize}
+                  reason: "Atlas 800I A2环境上，多机PD分离场景下，huawei.com/Ascend910应该等于mindie-server配置文件config.json中worldSize"
+                  severity: high
+              limits:
+                huawei.com/Ascend910:
+                  expected:
+                    type: eq
+                    value: ${conf/config.json.BackendConfig.ModelDeployConfig.ModelConfig[0].worldSize}
+                  reason: "Atlas 800I A2环境上，多机PD分离场景下，huawei.com/Ascend910应该大等于mindie-server配置文件config.json中worldSize"
+                  severity: high
+            env:
+              expected:
+                contains_all:
+                  - case: "${.name} == 'MINDIE_LOG_LEVEL' and (${.value} == 'INFO' or ${.value} == 'info')"
+                    suggest: "'INFO'"
+                    reason: "MINDIE日志等级建议设置为info或INFO"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_LOG_TO_FILE' and (${.value} == '1' or ${.value} == 'true')"
+                    suggest: "1"
+                    reason: "建议将MindIE日志写入文件，便于排查问题"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_LOG_TO_STDOUT' and (${.value} == '1' or ${.value} == 'true')"
+                    suggest: "1"
+                    reason: "建议将MindIE日志打屏，便于通过查看k8s日志查看程序运行状态"
+                    severity: low
+
+deployment/mindie_ms_coordinator.yaml:
+  - spec:
+      template:
+        spec:
+          containers[0]:
+            env:
+              expected:
+                contains_all:
+                  - case: "${.name} == 'MINDIE_LOG_LEVEL' and (${.value} == 'INFO' or ${.value} == 'info')"
+                    suggest: "'INFO'"
+                    reason: "MINDIE日志等级建议设置为info或INFO"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_LOG_TO_FILE' and (${.value} == '1' or ${.value} == 'true')"
+                    suggest: "1"
+                    reason: "建议将MindIE日志写入文件，便于排查问题"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_LOG_TO_STDOUT' and (${.value} == '1' or ${.value} == 'true')"
+                    suggest: "1"
+                    reason: "建议将MindIE日志打屏，便于通过查看k8s日志查看程序运行状态"
+                    severity: low
+
+deployment/mindie_ms_controller.yaml:
+  - spec:
+      template:
+        spec:
+          containers[0]:
+            env:
+              expected:
+                contains_all:
+                  - case: "${.name} == 'MINDIE_LOG_LEVEL' and (${.value} == 'INFO' or ${.value} == 'info')"
+                    suggest: "- name: MINDIE_LOG_LEVEL\n  value: 'INFO' of 'info'"
+                    reason: "MINDIE日志等级建议设置为info或INFO"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_LOG_TO_FILE' and (${.value} == '1' or ${.value} == 'true')"
+                    suggest: "- name: MINDIE_LOG_TO_FILE\n  value: '1' or 'true'"
+                    reason: "建议将MindIE日志写入文件，便于排查问题"
+                    severity: low
+                  - case: "${.name} == 'MINDIE_LOG_TO_STDOUT' and (${.value} == '1' or ${.value} == 'true')"
+                    suggest: "- name: MINDIE_LOG_TO_STDOUT\n  value: '1' or 'true'"
+                    reason: "建议将MindIE日志打屏，便于通过查看k8s日志查看程序运行状态"
+                    severity: low

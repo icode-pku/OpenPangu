@@ -1,0 +1,7 @@
+case_type: msit
+case_name: msit_llm_GE_FX_enhance_comparison
+enable: y
+script:
+  start: run.sh
+timeout: 60
+rank_size: 1

@@ -1,0 +1,9 @@
+ATC start working now, please wait for a moment.
+ATC run failed, Please check the detail log, Try 'atc --help' for more information
+EZ0501: IR for Op [Conv_52, optype [Conv]], is not registered.
+        Solution: Check the version of the installation package and reinstall the package. For details, see the operator specifications.
+        TraceBack (most recent call last):
+        IR for Op [Conv_112, optype [Conv]], is not registered.
+        IR for Op [Conv_172, optype [Conv]], is not registered.
+        IR for Op [Conv_232, optype [Conv]], is not registered.
+        IR for Op [Conv_292, optype [Conv]], is not registered.

@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "msserviceprofiler"
+version = "1.2.3"
+description = ""
+readme = "README.md"
+changelog = "https://gitcode.com/Ascend/msit/blob/master/msserviceprofiler/Changelog.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "*"
+psutil = "^6.0.0"
+loguru = "^0.7.3"
+scipy = "^1.3.2"
+filelock = { version = "^3.13.1", optional = true }
+pydantic-settings = { version = "^2.2.1", optional = true }
+pydantic = { version = "^2.10.5", optional = true }
+pyswarms = { version = "^1.3.0", optional = true }
+xgboost = { version = "2.0.0", optional = true }
+seaborn = { version = "^0.13.2", optional = true }
+matplotlib = { version = "^3.7.2", optional = true }
+scikit-learn = {version = "^1.3.2", optional = true}
+swifter = { version = "^1.4.0", extras = ["groupby"], optional = true }
+modin = { version = "^0.32.0", extras = ["all"], optional = true }
+requests = { version = "^2.32.0", optional = true }
+
+[tool.poetry.extras]
+real = ["filelock", "pydantic", "pydantic-settings", "pyswarms", "requests"]
+train = ["filelock", "pydantic", "pydantic-settings", "pyswarms", "xgboost", 
+        "seaborn", "matplotlib", "scikit-learn", "requests"]
+speed = [
+    "filelock", "pydantic", "pydantic-settings", "pyswarms", "xgboost", "seaborn", "matplotlib", "scikit-learn",
+    "swifter", "modin", "requests"
+]
+
+[tool.poetry.scripts]
+msserviceprofiler = "msserviceprofiler.__main__:main"
+
+[tool.poetry.plugins."vllm.general_plugins"]
+"msserviceprofiler" = "msserviceprofiler.vllm_profiler:register_service_profiler"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

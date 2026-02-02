@@ -1,0 +1,263 @@
+mindie_common_env:
+  CANN_INSTALL_PATH:
+    expected:
+      type: eq
+      value: "'/usr/local/Ascend'"
+    reason: "MindIE官方镜像中默认cann的安装路径为/usr/local/Ascend"
+    severity: low
+  MIES_INSTALL_PATH:
+    expected:
+      type: eq
+      value: "'/usr/local/Ascend/mindie/latest/mindie-service'"
+    reason: "MindIE官方镜像中默认MindIE Service的安装路径为/usr/local/Ascend/mindie/latest/mindie-service"
+    severity: low
+  MINDIE_LLM_HOME_PATH:
+    expected:
+      type: eq
+      value: "'/usr/local/Ascend/mindie/latest/mindie-llm'"
+    reason: "MindIE官方镜像中默认MindIE LLM的安装路径为/usr/local/Ascend/mindie/latest/mindie-llm"
+    severity: low
+  TASK_QUEUE_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "开启task_queue算子下发队列Level 1优化"
+    severity: high
+  HCCL_BUFFSIZE:
+    expected:
+      type: eq
+      value: 120
+    reason: "用于控制两个NPU之间共享数据的缓存区大小，HCCL_BUFFSIZE建议设置为120"
+    severity: low
+  MINDIE_LOG_TO_FILE:
+    expected:
+      type: enum
+      value: ["1", "'true'"]
+    reason: "建议将MindIE日志输出到文件，便于后续查看和分析"
+    severity: low
+  MINDIE_LOG_TO_STDOUT:
+    expected:
+      type: enum
+      value: ["1", "'true'"]
+    reason: "建议将MindIE日志打屏，便于通过查看k8s日志查看程序运行状态"
+    severity: low
+  MINDIE_LOG_LEVEL:
+    expected:
+      type: enum
+      value: ["'info'", "'INFO'"]
+    reason: "建议将MindIE日志级别设置为INFO，不影响执行效率且能提供必要的日志信息"
+    severity: low
+  ASCEND_SLOG_PRINT_TO_STDOUT:
+    expected:
+      type: eq
+      value: 0
+    reason: "建议关闭CANN日志打屏，避免影响运行效率"
+    severity: low
+  ASCEND_GLOBAL_LOG_LEVEL:
+    expected:
+      type: eq
+      value: 3
+    reason: "建议将CANN日志级别设置为3，对应ERROR级别"
+    severity: low
+  ASCEND_GLOBAL_EVENT_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "建议开启CANN的Event日志"
+    severity: low
+  ATB_LOG_TO_FILE:
+    expected:
+      type: eq
+      value: 0
+    reason: "不建议开启加速库日志输出文件，如需要定位问题可开启"
+    severity: low
+  ASDOPS_LOG_TO_STDOUT:
+    expected:
+      type: eq
+      value: 0
+    reason: "不建议开启算子库日志打屏，如需要定位问题可开启"
+    severity: low
+  ASDOPS_LOG_LEVEL:
+    expected:
+      type: eq
+      value: "'ERROR'"
+    reason: "建议将算子库日志级别设置为ERROR，不影响执行效率且能提供必要的日志信息"
+    severity: low
+  MINDIE_LLM_CONTINUOUS_BATCHING:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启MindIE LLM连续batching特性"
+    severity: high
+  MINDIE_LLM_RECOMPUTE_THRESHOLD:
+    expected:
+      type: eq
+      value: 0.5
+    reason: "建议将MindIE LLM重计算阈值设置为0.5"
+    severity: low
+  DIST_PD_DISAGGREGATION:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启分布式PD分离特性"
+    severity: high
+  HCCL_EXEC_TIMEOUT:
+    expected:
+      type: range
+      value: [0, 2147483647]
+    reason: "HCCL执行超时时间合法范围为[0, 2147483647],设置为0表示不限制超时"
+    severity: high
+
+mindie_server_prefill_env:
+  PYTORCH_NPU_ALLOC_CONF: 
+    expected:
+      type: eq
+      value: "'expandable_segments:True'"
+    reason: "需要开启torch_npu虚拟内存机制"
+    severity: high
+  OMP_NUM_THREADS:
+    expected:
+      type: eq
+      value: 8
+    reason: "OpenMP并行数建议设置为8"
+    severity: low
+  HCCL_CONNECT_TIMEOUT:
+    expected:
+      type: eq
+      value: 7200
+    reason: "HCCL建链超时时间建议设置为7200秒"
+    severity: high
+  HCCL_ENTRY_LOG_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "HCCL通信算子调用行为日志，建议开启，便于后续排查问题"
+    severity: low
+  DP_MOVE_UP_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启该特性，padding构造从组图上移至mindie-llm侧"
+    severity: high
+  HCCL_OP_EXPANSION_MODE:
+    expected:
+      type: eq
+      value: "'AIV'"
+    reason: "HCCL_OP_EXPANSION_MODE建议设置为AIV，设置通信算法的编排展开位置在Device侧的AI Vector Core计算单元"
+    severity: high
+  NPU_MEMORY_FRACTION:
+    expected:
+      type: eq
+      value: 0.92
+    reason: "NPU显存比建议设置为0.92，可根据实际业务场景加大，出现out of memory时可以尝试调大该值"
+    severity: low
+
+mindie_server_decode_env:
+  PYTORCH_NPU_ALLOC_CONF: 
+    expected:
+      type: eq
+      value: "'expandable_segments:True'"
+    reason: "需要开启torch_npu虚拟内存机制"
+    severity: high
+  OMP_NUM_THREADS:
+    expected:
+      type: eq
+      value: 8
+    reason: "OpenMP并行数建议设置为8"
+    severity: low
+  HCCL_CONNECT_TIMEOUT:
+    expected:
+      type: eq
+      value: 7200
+    reason: "HCCL建链超时时间建议设置为7200秒"
+    severity: high
+  HCCL_ENTRY_LOG_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "HCCL通信算子调用行为日志，建议开启，便于后续排查问题"
+    severity: low
+  DP_MOVE_UP_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启该特性，padding构造从组图上移至mindie-llm侧"
+    severity: high
+  MINDIE_ASYNC_SCHEDULING_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "建议开启MindIE异步调度特性"
+    severity: low
+  NPU_MEMORY_FRACTION:
+    expected:
+      type: eq
+      value: 0.92
+    reason: "NPU显存比建议设置为0.92，可根据实际业务场景加大，出现out of memory时可以尝试调大该值"
+    severity: low
+  MINDIE_ENABLE_DP_DISTRIBUTED:
+    expected:
+      type: eq
+      value: 1
+    reason: "PD分离特性下D节点需要开启分布式调度"
+    severity: high
+  DP_PARTITION_UP_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启此特性，模型侧控制dp进dp出"
+    severity: high
+  HCCL_BUFFSIZE:
+    expected:
+      type: eq
+      value: 512
+    reason: "用于控制两个NPU之间共享数据的缓存区大小，分布式D节点的HCCL_BUFFSIZE建议设置为512"
+    severity: low
+  ATB_LAYER_INTERNAL_TENSOR_REUSE:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启复用Layer间的中间Tensor复用"
+    severity: high
+  ATB_CONVERT_NCHW_TO_ND:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启将Tensor格式从NCHW转换为ND格式"
+    severity: high
+  ATB_CONTEXT_WORKSPACE_SIZE:
+    expected:
+      type: eq
+      value: 0
+    reason: "不预先设置workspace大小，后续会根据实际需要动态申请"
+    severity: high
+  ATB_LAUNCH_KERNEL_WITH_TILING:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启Tiling data拷贝随算子下发功能"
+    severity: high
+  ATB_LLM_ENABLE_AUTO_TRANSPOSE:
+    expected:
+      type: eq
+      value: 0
+    reason: "不能开启权重右矩阵自动转置"
+    severity: high
+  ATB_LLM_HCCL_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "需要开启HCCL通信后端"
+    severity: high
+  TASK_QUEUE_ENABLE:
+    expected:
+      type: eq
+      value: 1
+    reason: "开启task_queue算子下发队列Level 1优化"
+    severity: high
+  INF_NAN_MODE_ENABLE:
+    expected:
+      type: eq
+      value: 0
+    reason: "不开启此变量，对溢出值进行截断"
+    severity: high

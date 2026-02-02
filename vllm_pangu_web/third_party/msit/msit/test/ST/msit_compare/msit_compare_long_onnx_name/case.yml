@@ -1,0 +1,7 @@
+case_type: msit
+case_name: msit_compare_long_onnx_name
+enable:  y
+script:
+  start: run.sh
+timeout: 60
+rank_size: 1

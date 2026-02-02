@@ -1,0 +1,11 @@
+ATC start working now, please wait for a moment.
+ATC run failed, Please check the detail log, Try 'atc --help' for more information
+EZ9010: No parser is registered for Op [Conv_52, optype [ai.onnx::11::Convx]].
+        Solution: Check the version of the installation package and reinstall the package. For details, see the operator specifications.
+        TraceBack (most recent call last):
+        No parser is registered for Op [Conv_112, optype [ai.onnx::11::Convx]].
+        No parser is registered for Op [Conv_172, optype [ai.onnx::11::Convx]].
+        No parser is registered for Op [Conv_232, optype [ai.onnx::11::Convx]].
+        No parser is registered for Op [Conv_292, optype [ai.onnx::11::Convx]].
+        Model parse to graph failed, graph name:tdnnx.[FUNC:ModelParseToGraph][FILE:onnx_parser.cc][LINE:905]
+        ATC model parse ret fail.[FUNC:ParseGraph][FILE:omg.cc][LINE:788]

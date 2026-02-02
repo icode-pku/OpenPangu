@@ -1,0 +1,84 @@
+ascend:
+  driver:
+    version:
+      expected:
+        type: "ge"
+        value: "Version('25.0')"
+      reason: VLLM 0.9.1 版本的大 EP 场景如果不升级最新驱动版本，可能会导致 dispatch_combine 等算子调用失败
+      severity: "high"
+
+env:
+  OMP_PROC_BIND:
+    expected:
+      type: eq
+      value: "'false'"
+    reason: "OpenMP多线程绑核配置性能"
+    severity: low
+  OMP_NUM_THREADS:
+    expected:
+      type: eq
+      value: "'10'"
+    reason: "OpenMP多线程绑核配置性能"
+    severity: low
+  PYTORCH_NPU_ALLOC_CONF:
+    expected:
+      type: eq
+      value: "'expandable_segments:True'"
+    reason: "OpenMP多线程绑核配置性能"
+    severity: low
+  HCCL_BUFFSIZE:
+    expected:
+      type: eq
+      value: "'1024'"
+    reason: "HCCL通信缓存，PD分离场景，P节点设置为512，D节点设置为1024"
+    severity: low
+  TASK_QUEUE_ENABLE:
+    expected:
+      type: eq
+      value: "'1'"
+    reason: "单队列模式"
+    severity: low
+  VLLM_USE_V1:
+    expected:
+      type: eq
+      value: "'1'"
+    reason: "VLLM V1 engine开关，不配置默认走V0"
+    severity: high
+  VLLM_WORKER_MULTIPROC_METHOD:
+    expected:
+      type: eq
+      value: "'fork'"
+    reason: "PD分离场景下必要"
+    severity: high
+  VLLM_ASCEND_EXTERNAL_DP_LB_ENABLED:
+    expected:
+      type: eq
+      value: "'1'"
+    reason: "分布式DP开关，不设置默认使用原生DP，性能相关"
+    severity: low
+
+sys:
+  high_performance:
+    expected:
+      type: "eq"
+      value: true
+    reason: "使 CPU 运行在最大频率下，可以提升 CPU 性能，但是会提高能耗"
+    severity: "low"
+  virtual_machine:
+    expected:
+      type: "eq"
+      value: false
+    reason: "虚拟机和物理机的 cpu 核数、频率有差异，会导致性能下降"
+    severity: "low"
+  transparent_hugepage:
+    expected:
+      type: "eq"
+      value: "'always'"
+    reason: "开启透明大页，吞吐率结果会更加稳定"
+    severity: "low"
+  release:
+    expected:
+      type: "ge"
+      value: "Version('5.10')"
+    reason: "升级到 5.10 以上，CPU 下发会加快，可以减少 host bound"
+    severity: "low"

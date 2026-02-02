@@ -1,0 +1,7 @@
+case_type: msit
+case_name: msit_llm_dump_topo
+enable: y
+script:
+  start: run.sh
+timeout: 60
+rank_size: 1

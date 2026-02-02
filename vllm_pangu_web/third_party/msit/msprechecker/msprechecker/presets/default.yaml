@@ -1,0 +1,34 @@
+sys:
+  high_performance:
+    expected:
+      type: "eq"
+      value: true
+    reason: "使 CPU 运行在最大频率下，可以提升 CPU 性能，但是会提高能耗"
+    severity: "low"
+  virtual_machine:
+    expected:
+      type: "eq"
+      value: false
+    reason: "虚拟机和物理机的 cpu 核数、频率有差异，会导致性能下降"
+    severity: "low"
+  transparent_hugepage:
+    expected:
+      type: "eq"
+      value: "'always'"
+    reason: "开启透明大页，吞吐率结果会更加稳定"
+    severity: "low"
+  release:
+    expected:
+      type: "ge"
+      value: "Version('5.10')"
+    reason: "升级到 5.10 以上，CPU 下发会加快，可以减少 host bound"
+    severity: "low"
+
+ascend:
+  driver:
+    version:
+      expected:
+        type: "ge"
+        value: "Version('24.1')"
+      reason: 升级到最新的驱动可以提升性能
+      severity: "low"

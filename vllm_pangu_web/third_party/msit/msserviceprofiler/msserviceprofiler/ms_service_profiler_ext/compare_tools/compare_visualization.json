@@ -1,0 +1,343 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "description": "qq1",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 78,
+    "links": [],
+    "panels": [
+      {
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "cede46s8vlc74a"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic-by-name"
+            },
+            "custom": {
+              "align": "center",
+              "cellOptions": {
+                "type": "color-background"
+              },
+              "filterable": false,
+              "inspect": true,
+              "minWidth": 200
+            },
+            "fieldMinMax": false,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "yellow",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": ""
+              },
+              "properties": []
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 18,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "options": {
+          "cellHeight": "sm",
+          "footer": {
+            "countRows": false,
+            "enablePagination": false,
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true,
+          "sortBy": []
+        },
+        "pluginVersion": "11.3.0",
+        "targets": [
+          {
+            "datasource": {
+              "type": "frser-sqlite-datasource",
+              "uid": "cede46s8vlc74a"
+            },
+            "queryText": "SELECT * FROM service;",
+            "queryType": "table",
+            "rawQueryText": "SELECT * FROM service;",
+            "refId": "A",
+            "timeColumns": [
+              "time",
+              "ts"
+            ]
+          }
+        ],
+        "title": "服务维度数据比对",
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "cede46s8vlc74a"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "cellOptions": {
+                "type": "auto"
+              },
+              "inspect": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 6
+        },
+        "id": 2,
+        "options": {
+          "cellHeight": "sm",
+          "footer": {
+            "countRows": false,
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true
+        },
+        "pluginVersion": "11.3.0",
+        "targets": [
+          {
+            "datasource": {
+              "type": "frser-sqlite-datasource",
+              "uid": "cede46s8vlc74a"
+            },
+            "queryText": "SELECT * FROM request",
+            "queryType": "table",
+            "rawQueryText": "SELECT * FROM request",
+            "refId": "A",
+            "timeColumns": [
+              "time",
+              "ts"
+            ]
+          }
+        ],
+        "title": "Request 维度数据比对",
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "cede46s8vlc74a"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "fillOpacity": 80,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineWidth": 1,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 14
+        },
+        "id": 3,
+        "options": {
+          "barRadius": 0.1,
+          "barWidth": 0.7,
+          "fullHighlight": false,
+          "groupWidth": 0.7,
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "orientation": "horizontal",
+          "showValue": "auto",
+          "stacking": "none",
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          },
+          "xField": "group_name",
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0
+        },
+        "pluginVersion": "11.3.0",
+        "targets": [
+          {
+            "datasource": {
+              "type": "frser-sqlite-datasource",
+              "uid": "cede46s8vlc74a"
+            },
+            "queryText": "SELECT\n    CAST(FLOOR(value / ${batch_group}) * ${batch_group} AS VARCHAR) || '-' || \n    CAST(FLOOR(value / ${batch_group}) * ${batch_group} + ${batch_group} AS VARCHAR) AS group_name,\n    \n    SUM(CASE WHEN type_metric = 'Prefill_a' THEN 1 ELSE 0 END) AS Prefill_a,\n    SUM(CASE WHEN type_metric = 'Prefill_b' THEN 1 ELSE 0 END) AS Prefill_b,\n    SUM(CASE WHEN type_metric = 'Decode_a' THEN 1 ELSE 0 END) AS Decode_a,\n    SUM(CASE WHEN type_metric = 'Decode_b' THEN 1 ELSE 0 END) AS Decode_b\nFROM (\n    SELECT 'Prefill_a' AS type_metric, batch_size_a AS value\n    FROM modelExec\n    UNION ALL\n    SELECT 'Prefill_b' AS type_metric, batch_size_b AS value\n    FROM modelExec\n    UNION ALL\n    SELECT 'Decode_a' AS type_metric, batch_size_a AS value\n    FROM modelExec\n    WHERE batch_type = 'Decode'\n    UNION ALL\n    SELECT 'Decode_b' AS type_metric, batch_size_b AS value\n    FROM modelExec\n    WHERE batch_type = 'Decode'\n) AS metrics\nWHERE value IS NOT NULL\nGROUP BY \n    group_name\nORDER BY \n    CAST(group_name AS INTERVAL) ASC;",
+            "queryType": "table",
+            "rawQueryText": "SELECT\n    CAST(FLOOR(value / ${batch_group}) * ${batch_group} AS VARCHAR) || '-' || \n    CAST(FLOOR(value / ${batch_group}) * ${batch_group} + ${batch_group} AS VARCHAR) AS group_name,\n    \n    SUM(CASE WHEN type_metric = 'Prefill_a' THEN 1 ELSE 0 END) AS Prefill_a,\n    SUM(CASE WHEN type_metric = 'Prefill_b' THEN 1 ELSE 0 END) AS Prefill_b,\n    SUM(CASE WHEN type_metric = 'Decode_a' THEN 1 ELSE 0 END) AS Decode_a,\n    SUM(CASE WHEN type_metric = 'Decode_b' THEN 1 ELSE 0 END) AS Decode_b\nFROM (\n    SELECT 'Prefill_a' AS type_metric, batch_size_a AS value\n    FROM modelExec\n    UNION ALL\n    SELECT 'Prefill_b' AS type_metric, batch_size_b AS value\n    FROM modelExec\n    UNION ALL\n    SELECT 'Decode_a' AS type_metric, batch_size_a AS value\n    FROM modelExec\n    WHERE batch_type = 'Decode'\n    UNION ALL\n    SELECT 'Decode_b' AS type_metric, batch_size_b AS value\n    FROM modelExec\n    WHERE batch_type = 'Decode'\n) AS metrics\nWHERE value IS NOT NULL\nGROUP BY \n    group_name\nORDER BY \n    CAST(group_name AS INTERVAL) ASC;",
+            "refId": "A",
+            "timeColumns": [
+              "time",
+              "ts"
+            ]
+          }
+        ],
+        "title": "Batch 维度数据比对",
+        "type": "barchart"
+      }
+    ],
+    "preload": false,
+    "schemaVersion": 40,
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "text": "5",
+            "value": "5"
+          },
+          "description": "",
+          "label": "Batch Group Size",
+          "name": "batch_group",
+          "options": [
+            {
+              "selected": false,
+              "text": "1",
+              "value": "1"
+            },
+            {
+              "selected": false,
+              "text": "2",
+              "value": "2"
+            },
+            {
+              "selected": true,
+              "text": "5",
+              "value": "5"
+            },
+            {
+              "selected": false,
+              "text": "10",
+              "value": "10"
+            },
+            {
+              "selected": false,
+              "text": "20",
+              "value": "20"
+            },
+            {
+              "selected": false,
+              "text": "50",
+              "value": "50"
+            },
+            {
+              "selected": false,
+              "text": "100",
+              "value": "100"
+            }
+          ],
+          "query": "1,2,5,10,20,50,100",
+          "type": "custom"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "RNX_test",
+    "uid": "eede5l6u2ntogax",
+    "version": 15,
+    "weekStart": ""
+  }

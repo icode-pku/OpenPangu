@@ -1,0 +1,7 @@
+case_type: msit
+case_name: msit_compare_dynamic_input_shape
+enable:  y
+script:
+  start: run.sh
+timeout: 30
+rank_size: 1

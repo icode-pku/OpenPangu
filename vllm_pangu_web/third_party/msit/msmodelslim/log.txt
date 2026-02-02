@@ -1,0 +1,32 @@
+collect packages from CANN installation path: /usr/local/Ascend/ascend-toolkit/latest/python/site-packages/msmodelslim/, copy to /workspace/vllm_pangu_web/third_party/msit/msmodelslim/msmodelslim
+cleaning build cache to ensure fresh build
+uninstalling existing msmodelslim package
+Found existing installation: msmodelslim 8.2.0
+Uninstalling msmodelslim-8.2.0:
+  Successfully uninstalled msmodelslim-8.2.0
+installing msmodelslim package without cache
+Looking in indexes: https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+Processing /workspace/vllm_pangu_web/third_party/msit/msmodelslim
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: easydict==1.13 in /usr/local/python3.11.13/lib/python3.11/site-packages (from msmodelslim==8.2.0) (1.13)
+Requirement already satisfied: einops in /usr/local/python3.11.13/lib/python3.11/site-packages (from msmodelslim==8.2.0) (0.8.1)
+Requirement already satisfied: pydantic>=2.10.1 in /usr/local/python3.11.13/lib/python3.11/site-packages (from msmodelslim==8.2.0) (2.12.5)
+Requirement already satisfied: wcmatch>=10.0 in /usr/local/python3.11.13/lib/python3.11/site-packages (from msmodelslim==8.2.0) (10.1)
+Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/python3.11.13/lib/python3.11/site-packages (from pydantic>=2.10.1->msmodelslim==8.2.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.5 in /usr/local/python3.11.13/lib/python3.11/site-packages (from pydantic>=2.10.1->msmodelslim==8.2.0) (2.41.5)
+Requirement already satisfied: typing-extensions>=4.14.1 in /usr/local/python3.11.13/lib/python3.11/site-packages (from pydantic>=2.10.1->msmodelslim==8.2.0) (4.15.0)
+Requirement already satisfied: typing-inspection>=0.4.2 in /usr/local/python3.11.13/lib/python3.11/site-packages (from pydantic>=2.10.1->msmodelslim==8.2.0) (0.4.2)
+Requirement already satisfied: bracex>=2.1.1 in /usr/local/python3.11.13/lib/python3.11/site-packages (from wcmatch>=10.0->msmodelslim==8.2.0) (2.6)
+Building wheels for collected packages: msmodelslim
+  Building wheel for msmodelslim (pyproject.toml): started
+  Building wheel for msmodelslim (pyproject.toml): finished with status 'done'
+  Created wheel for msmodelslim: filename=msmodelslim-8.2.0-py3-none-any.whl size=13536221 sha256=8061c39cbbf84e0632b7a4bc1938828342c8867a15efb87486067197fbb77251
+  Stored in directory: /tmp/pip-ephem-wheel-cache-vtg31ng9/wheels/de/b4/44/5a5be2a6a055729b2249836595895ee50a0caf6bf306d012af
+Successfully built msmodelslim
+Installing collected packages: msmodelslim
+Successfully installed msmodelslim-8.2.0

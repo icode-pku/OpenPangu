@@ -1,0 +1,40 @@
+export ASCEND_GLOBAL_LOG_LEVEL=3
+export ASCEND_SLOG_PRINT_TO_STDOUT=0
+export SLOG_PRINT_TO_STDOUT=0
+declare -i ret_ok=0
+declare -i ret_failed=1
+run_ok=$ret_ok
+
+
+MODEL_PATH=$PROJECT_PATH/resource/msit_llm             #原模型路径
+
+echo $MODEL_PATH
+echo -e "\033[1;32m[1/1]\033[0m msit_llm_dump_torch_model_weight 测试用例"
+pip install $MODEL_PATH/pytorch_v2.1.0_py310/apex-0.1+ascend-cp310-cp310-linux_aarch64.whl --force-reinstall -q
+pip install $MODEL_PATH/torch-2.1.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl --force-reinstall -q
+pip install $MODEL_PATH/pytorch_v2.1.0_py310/torch_npu-2.1.0.post7-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl --force-reinstall -q
+
+source $MODEL_PATH/ascend-transformer-boost/output/atb/set_env.sh
+source $MODEL_PATH/ascend-speed-inference/output/atb_speed/set_env.sh
+
+
+export PYTHONPATH=$PYTHONPATH:$MODEL_PATH/ascend-speed-inference/pytorch/examples/chatglm2_6b
+RUN_PY_PATH=`realpath run.py`
+cd $MODEL_PATH/ascend-speed-inference/pytorch/examples/chatglm2_6b
+rm msit_dump_torch_weight -rf
+mkdir msit_dump_torch_weight
+echo `realpath msit_dump_torch_weight`
+python $RUN_PY_PATH  --mode precision_single --model_path $MODEL_PATH/ascend-speed-inference/pytorch/examples/chatglm2_6b --batch 1 --model_file patches/modeling_chatglm_npu.py
+if [ $? -eq 0 ]
+then
+    echo msit_llm_dump_torch_model_weight: Success
+else
+    echo msit_llm_dump_torch_model_weight: Failed
+    run_ok=$ret_failed
+fi
+
+echo "y" | pip uninstall torch -q
+echo "y" | pip uninstall torch_npu -q
+pip install torch==2.1.0 -q
+
+exit $run_ok

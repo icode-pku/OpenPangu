@@ -1,0 +1,303 @@
+mies_config:
+  ref:
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].dp
+      as: dp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].tp
+      as: tp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].cp
+      as: cp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].sp
+      as: sp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].pp
+      as: pp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].moe_ep
+      as: moe_ep
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].moe_tp
+      as: moe_tp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].worldSize
+      as: world_size
+    - from: BackendConfig.ModelDeployConfig.maxSeqLen
+      as: max_seq_len
+
+  ref.dp:
+    expected:
+      case: "int(${ref.dp}) * int(${ref.tp}) * int(${ref.cp}) * int(${ref.pp}) == 16"
+      reason: "在Atlas 800I A3单机混部DeepSeek部署场景下，并行策略要求保证dp * tp * cp * pp = 16，其中没配置的并行策略默认值为1"
+      severity: high
+
+  ref.pp:
+    expected:
+      type: eq
+      value: 1
+    reason: "pp取值只能等于1"
+    severity: high
+
+  ref.sp:
+    expected:
+      type: enum
+      value: [1, "${ref.tp}"]
+    reason: "sp取值只能等于1或者等于tp取值"
+    severity: high
+
+  ref.max_seq_len:
+    expected:
+      if: "${ref.max_seq_len} <= 18000"
+      then:
+        case: "${ref.dp} == 2 and ${ref.tp} == 8 and ${ref.sp} == 1"
+        reason: "在Atlas 800I A3单机拉起DeepSeek模型场景下，maxSeqLen小于等于18000时,并行策略建议设置为：dp=2, tp=8, sp=1，其中没配置的并行策略默认值为1"
+        severity: low
+      else:
+        case: "${ref.cp} == 2 and ${ref.tp} == 8 and ${ref.sp} == 8"
+        reason: "在Atlas 800I A3单机拉起DeepSeek模型场景下，maxSeqLen大于18000时，并行策略建议设置为：cp=2, tp=8, sp=8，其中没配置的并行策略默认值为1"
+        severity: low
+
+  ref.moe_ep:
+    expected:
+      case: "int(${ref.moe_ep}) * int(${ref.moe_tp}) == 16"
+      reason: "在Atlas 800I A3单机拉起DeepSeek模型场景下, 专家并行策略需要满足moe_ep * moe_tp = 16，其中没配置的并行策略默认值为1"
+      severity: high
+
+  ref.moe_tp:
+    expected:
+      if: "${ref.max_seq_len} <= 18000"
+      then:
+        case: "${ref.moe_ep} == 4 and ${ref.moe_tp} == 4"
+        reason: "在Atlas 800I A3单机拉起DeepSeek模型场景下，maxSeqLen小于等于18000时，专家并行策略建议设置为：moe_ep=4, moe_tp=4, 其中没配置的并行策略默认值为1"
+        severity: low
+      else:
+        case: "${ref.moe_ep} == 16 and ${ref.moe_tp} == 1"
+        reason: "在Atlas 800I A3单机拉起DeepSeek模型场景下，maxSeqLen大于18000时，专家并行策略建议设置为：moe_ep=16, moe_tp=1, 其中没配置的并行策略默认值为1"
+        severity: low
+
+  ServerConfig:
+    tokenTimeout:
+      expected:
+        type: eq
+        value: 600
+      reason: "tokenTimeout建议值为600，表示每token的超时时间，在测试推理性能时可以适当增大，不超过3600"
+      severity: low
+    e2eTimeout:
+      expected:
+        type: eq
+        value: 600
+      reason: "e2eTimeout建议值为600，表示端到端推理的超时时间，在测试推理性能时可以适当增大，不超过65535"
+      severity: low
+    httpsEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    inferMode:
+      expected:
+        type: eq
+        value: "'standard'"
+      reason: "PD混部场景下，inferMode应该是standard"
+      severity: high
+    interCommTLSEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+  BackendConfig:
+    npuDeviceIds:
+      expected:
+        type: eq
+        value: [[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]]
+      reason: "P节点中npuDeviceIds应该设置为[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]]"
+      severity: high
+    multiNodesInferEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "multiNodesInferEnabled表示服务跨机推理，在Atlas 800I A3场景单机拉起DeepSeek模型场景下应该是false"
+      severity: high
+    ModelDeployConfig:
+      maxSeqLen:
+        expected:
+          type: ">="
+          value: ${BackendConfig.ModelDeployConfig.maxInputTokenLen}
+        reason: "maxSeqLen不应该小于maxInputTokenLen，表示输入token加输出token的上限"
+        severity: high
+      maxInputTokenLen:
+        expected:
+          type: ">="
+          value: 1
+        reason: "maxInputTokenLen应该大于等于1，表示输入token的上限"
+        severity: high
+      ModelConfig[0]:
+        modelWeightPath:
+          expected:
+            case:
+              type: path
+              value: "'exists'"
+            reason: "modelWeightPath需要配置为当前容器中挂载的模型权重路径"
+            severity: high
+        worldSize:
+          expected:
+            type: eq
+            value: 16
+          reason: "worldSize表示服务跨机推理时的npu卡数，在Atlas 800I A3场景双机拉起DeepSeek模型场景下应该是16"
+          severity: high
+        ignore_eos:
+          expected:
+            type: eq
+            value: false
+          reason: "ignore_eos表示是否忽略eos token，测试固定长度输出时可以设置为true"
+          severity: low
+        plugin_params:
+          expected:
+            if: "${ref.max_seq_len} <= 68000"
+            then:
+              case:
+                type: eq
+                value: "'{\"plugin_type\":\"mtp\",\"num_speculative_tokens\": 1}'"
+              reason: "在上下文长度（maxSeqLen）在68000以下场景，建议开启MTP特性，值为\"{\"plugin_type\":\"mtp\",\"num_speculative_tokens\": 1}\""
+              severity: low
+            else:
+              case: absent
+              reason: "在上下文长度（maxSeqLen）大于68000场景，由于显存不充足，建议不开启MTP特性，需要移除plugin_type中的mtp特性"
+              severity: low
+        models:
+          deepseekv2:
+            enable_mlapo_prefetch:
+              expected:
+                type: eq
+                value: true
+              reason: "enable_mlapo_prefetch表示是否开启MLAPO预取，建议开启"
+              severity: low
+            kv_cache_options:
+              enable_nz:
+                expected:
+                  type: eq
+                  value: true
+                reason: "enable_nz表示kv cache是否使用NZ格式，建议开启"
+                severity: low
+    ScheduleConfig:
+      maxPrefillBatchSize:
+        expected:
+          type: ">="
+          value: 1
+        reason: "表示prefill的最大batch size，不能小于1"
+        severity: high
+      maxPrefillTokens:
+        expected:
+          type: ">="
+          value: ${BackendConfig.ModelDeployConfig.maxInputTokenLen}
+        reason: "maxPrefillTokens需要设置大于maxInputTokenLen，表示prefill最大token数"
+        severity: high
+      maxIterTimes:
+        expected:
+          type: range
+          value: [1, "${BackendConfig.ModelDeployConfig.maxSeqLen}"]
+        reason: "maxIterTimes应该大于等于1小于等于maxSeqLen"
+        severity: high
+
+env:
+  PYTORCH_NPU_ALLOC_CONF:
+    expected:
+      type: eq
+      value: "'expandable_segments:True'"
+    reason: "需要开启torch_npu虚拟内存机制"
+    severity: medium
+  ATB_WORKSPACE_MEM_ALLOC_ALG_TYPE:
+    expected:
+      type: eq
+      value: "'3'"
+    reason: "workspace内存分配算法选择，建议设置为3，最大优化显存碎片与workspace空间"
+    severity: medium
+  ATB_WORKSPACE_MEM_ALLOC_GLOBAL:
+    expected:
+      type: eq
+      value: "'1'"
+    reason: "建议开启全局中间tensor内存分配算法，提升显存利用率"
+    severity: medium
+  HCCL_OP_EXPANSION_MODE:
+    expected:
+      type: eq
+      value: "'AIV'"
+    reason: "HCCL_OP_EXPANSION_MODE建议设置为AIV，设置通信算法的编排展开位置在Device侧的AI Vector Core计算单元"
+    severity: high
+  NPU_MEMORY_FRACTION:
+    expected:
+      type: eq
+      value: "'0.96'"
+    reason: "A3单机DeepSeek场景下，NPU显存比建议设置为0.96，可根据实际业务场景加大，出现out of memory时可以尝试调大该值"
+    severity: low
+  ATB_LLM_HCCL_ENABLE:
+    expected:
+      type: eq
+      value: "'1'"
+    reason: "建议开启HCCL通信后端"
+    severity: medium
+  ATB_LAYER_INTERNAL_TENSOR_REUSE:
+    expected:
+      type: eq
+      value: "'1'"
+    reason: "建议开启复用Layer间的中间Tensor复用"
+    severity: low
+  HCCL_CONNECT_TIMEOUT:
+    expected:
+      type: eq
+      value: "'7200'"
+    reason: "HCCL建链超时时间建议设置为7200秒"
+    severity: low
+  HCCL_EXEC_TIMEOUT:
+    expected:
+      type: eq
+      value: "'0'"
+    reason: "HCCL执行超时时间建议设置为0，不限制超时"
+    severity: medium
+  ATB_LLM_ENABLE_AUTO_TRANSPOSE:
+    expected:
+      type: eq
+      value: "'0'"
+    reason: "不能开启权重右矩阵自动转置"
+    severity: high
+  MINDIE_ASYNC_SCHEDULING_ENABLE:
+    expected:
+      type: eq
+      value: "'1'"
+    reason: "建议开启MindIE异步调度特性，提升推理性能"
+    severity: low
+  TASK_QUEUE_ENABLE:
+    expected:
+      type: eq
+      value: "'2'"
+    reason: "建议开启task_queue算子下发队列Level 2优化"
+    severity: low
+  MINDIE_LOG_TO_FILE:
+    expected:
+      type: enum
+      value: ["'1'", "'true'"]
+    reason: "建议将MindIE日志写入文件，便于排查问题"
+    severity: low
+  MINDIE_LOG_TO_STDOUT:
+    expected:
+      type: enum
+      value: ["'1'", "'true'"]
+    reason: "建议将MindIE日志打屏，便于查看程序运行状态"
+    severity: low
+  MINDIE_LOG_LEVEL:
+    expected:
+      if: "${.} != None"
+      then:
+        case:
+          type: enum
+          value: ["'info'", "'INFO'"]
+        reason: "如果配置了MINDIE_LOG_LEVEL，建议设置为info或INFO"
+        severity: low
+  OMP_NUM_THREADS:
+    expected:
+      type: eq
+      value: "'16'"
+    reason: "OpenMP并行数建议设置为16"
+    severity: low

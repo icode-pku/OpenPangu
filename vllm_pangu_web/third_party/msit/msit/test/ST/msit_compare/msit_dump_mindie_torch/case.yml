@@ -1,0 +1,7 @@
+case_type: msit
+case_name: msit_dump_mindie_torch
+enable:  y
+script:
+  start: run.sh
+timeout: 120
+rank_size: 1

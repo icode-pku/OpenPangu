@@ -1,0 +1,491 @@
+{
+    "modelName": "Bloom7BFlashAttentionModel",
+    "nodes": [
+        {
+            "inTensors": [
+                "Bloom7BFlashAttentionModel_weight_19",
+                "Bloom7BFlashAttentionModel_weight_20",
+                "Bloom7BFlashAttentionModel_weight_21",
+                "Bloom7BFlashAttentionModel_weight_22",
+                "Bloom7BFlashAttentionModel_weight_23",
+                "Bloom7BFlashAttentionModel_weight_24",
+                "Bloom7BFlashAttentionModel_weight_25",
+                "Bloom7BFlashAttentionModel_weight_26",
+                "Bloom7BFlashAttentionModel_weight_27",
+                "Bloom7BFlashAttentionModel_weight_28",
+                "Bloom7BFlashAttentionModel_weight_29",
+                "Bloom7BFlashAttentionModel_weight_30",
+                "Bloom7BFlashAttentionModel_weight_31",
+                "Bloom7BFlashAttentionModel_weight_32",
+                "Bloom7BFlashAttentionModel_weight_33",
+                "Bloom7BFlashAttentionModel_weight_34",
+                "Bloom7BFlashAttentionModel_internal_2",
+                "Bloom7BFlashAttentionModel_input_1",
+                "Bloom7BFlashAttentionModel_input_2",
+                "Bloom7BFlashAttentionModel_input_3",
+                "Bloom7BFlashAttentionModel_input_4",
+                "Bloom7BFlashAttentionModel_input_5",
+                "Bloom7BFlashAttentionModel_input_6",
+                "Bloom7BFlashAttentionModel_input_8"
+            ],
+            "opName": "Bloom7bCommonLayer_3",
+            "outTensors": [
+                "Bloom7BFlashAttentionModel_internal_3",
+                "Bloom7BFlashAttentionModel_output_2",
+                "Bloom7BFlashAttentionModel_output_3"
+            ],
+            "opType": "BloomLayer",
+            "internalTensors": [
+                "Bloom7bCommonLayer_3_internal_0",
+                "Bloom7bCommonLayer_3_internal_1",
+                "Bloom7bCommonLayer_3_internal_2",
+                "Bloom7bCommonLayer_3_internal_3",
+                "Bloom7bCommonLayer_3_internal_4",
+                "Bloom7bCommonLayer_3_internal_5",
+                "Bloom7bCommonLayer_3_internal_6",
+                "Bloom7bCommonLayer_3_internal_7",
+                "Bloom7bCommonLayer_3_internal_8",
+                "Bloom7bCommonLayer_3_internal_9"
+            ],
+            "nodes": [
+                {
+                    "opName": "LayerNormOperation_3_0",
+                    "opType": "LayerNormOperation",
+                    "param": {
+                        "layerType": 1,
+                        "normParam": {
+                            "beginNormAxis": 2,
+                            "beginParamsAxis": 1,
+                            "epsilon": 0.000009999999747378752,
+                            "opMode": 0,
+                            "quantInputAlpha": 1,
+                            "quantInputOffset": 0,
+                            "quantInputScale": 1,
+                            "quantType": 0,
+                            "zoomScaleValue": 1
+                        },
+                        "postNormParam": null
+                    },
+                    "inTensors": [
+                        "Bloom7BFlashAttentionModel_internal_2",
+                        "Bloom7BFlashAttentionModel_weight_19",
+                        "Bloom7BFlashAttentionModel_weight_20"
+                    ],
+                    "outTensors": [
+                        "Bloom7bCommonLayer_3_internal_0"
+                    ]
+                },
+                {
+                    "opName": "LinearOperation_3_1",
+                    "opType": "LinearOperation",
+                    "param": {
+                        "hasBias": true,
+                        "transposeA": false,
+                        "transposeB": false
+                    },
+                    "inTensors": [
+                        "Bloom7bCommonLayer_3_internal_0",
+                        "Bloom7BFlashAttentionModel_weight_21",
+                        "Bloom7BFlashAttentionModel_weight_22"
+                    ],
+                    "outTensors": [
+                        "Bloom7bCommonLayer_3_internal_1"
+                    ]
+                },
+                {
+                    "opName": "SplitOperation_3_2",
+                    "opType": "SplitOperation",
+                    "param": {
+                        "splitDim": 3,
+                        "splitNum": 3
+                    },
+                    "inTensors": [
+                        "Bloom7bCommonLayer_3_internal_1"
+                    ],
+                    "outTensors": [
+                        "Bloom7bCommonLayer_3_internal_2",
+                        "Bloom7bCommonLayer_3_internal_3",
+                        "Bloom7bCommonLayer_3_internal_4"
+                    ]
+                },
+                {
+                    "opName": "SelfAttentionOperation_3_3",
+                    "opType": "SelfAttentionOperation",
+                    "param": {
+                        "batchRunStatusEnable": false,
+                        "clampMax": 0,
+                        "clampMin": 0,
+                        "coderType": 0,
+                        "headDim": 128,
+                        "headNum": 32,
+                        "isClamp": false,
+                        "isEncoder": false,
+                        "isFp32": false,
+                        "isSupportAlibi": true,
+                        "isTriuMask": 0,
+                        "kvHeadNum": 0,
+                        "qScale": 0.0883883461356163,
+                        "qkScale": 1
+                    },
+                    "inTensors": [
+                        "Bloom7bCommonLayer_3_internal_2",
+                        "Bloom7bCommonLayer_3_internal_3",
+                        "Bloom7bCommonLayer_3_internal_4",
+                        "Bloom7BFlashAttentionModel_input_2",
+                        "Bloom7BFlashAttentionModel_input_3",
+                        "Bloom7BFlashAttentionModel_input_1",
+                        "Bloom7BFlashAttentionModel_input_4",
+                        "Bloom7BFlashAttentionModel_input_5",
+                        "Bloom7BFlashAttentionModel_input_8"
+                    ],
+                    "outTensors": [
+                        "Bloom7bCommonLayer_3_internal_5"
+                    ]
+                },
+                {
+                    "opName": "ParallelLinearBaseV2_3_4",
+                    "opType": "ParallelLinearBaseV2",
+                    "param": "",
+                    "inTensors": [
+                        "Bloom7bCommonLayer_3_internal_5",
+                        "Bloom7BFlashAttentionModel_weight_24",
+                        "Bloom7BFlashAttentionModel_weight_25",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6"
+                    ],
+                    "outTensors": [
+                        "Bloom7bCommonLayer_3_internal_6"
+                    ],
+                    "internalTensors": [
+                        "ParallelLinearBaseV2_3_4_internal_0"
+                    ],
+                    "nodes": [
+                        {
+                            "opName": "LinearOperation_3_4_0",
+                            "opType": "LinearOperation",
+                            "param": {
+                                "hasBias": false,
+                                "transposeA": false,
+                                "transposeB": false
+                            },
+                            "inTensors": [
+                                "Bloom7bCommonLayer_3_internal_5",
+                                "Bloom7BFlashAttentionModel_weight_24"
+                            ],
+                            "outTensors": [
+                                "ParallelLinearBaseV2_3_4_internal_0"
+                            ]
+                        },
+                        {
+                            "opName": "ElewiseOperation_3_4_1",
+                            "opType": "ElewiseOperation",
+                            "param": {
+                                "elewiseType": 8,
+                                "mulsParam": {
+                                    "varAttr": 0
+                                },
+                                "outTensorType": -1,
+                                "quantParam": {
+                                    "inputOffset": 0,
+                                    "inputScale": 1
+                                }
+                            },
+                            "inTensors": [
+                                "ParallelLinearBaseV2_3_4_internal_0",
+                                "Bloom7BFlashAttentionModel_weight_25"
+                            ],
+                            "outTensors": [
+                                "Bloom7bCommonLayer_3_internal_6"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "opName": "ElewiseOperation_3_5",
+                    "opType": "ElewiseOperation",
+                    "param": {
+                        "elewiseType": 8,
+                        "mulsParam": {
+                            "varAttr": 0
+                        },
+                        "outTensorType": -1,
+                        "quantParam": {
+                            "inputOffset": 0,
+                            "inputScale": 1
+                        }
+                    },
+                    "inTensors": [
+                        "Bloom7bCommonLayer_3_internal_6",
+                        "Bloom7BFlashAttentionModel_internal_2"
+                    ],
+                    "outTensors": [
+                        "Bloom7bCommonLayer_3_internal_7"
+                    ]
+                },
+                {
+                    "opName": "LayerNormOperation_3_6",
+                    "opType": "LayerNormOperation",
+                    "param": {
+                        "layerType": 1,
+                        "normParam": {
+                            "beginNormAxis": 2,
+                            "beginParamsAxis": 1,
+                            "epsilon": 0.000009999999747378752,
+                            "opMode": 0,
+                            "quantInputAlpha": 1,
+                            "quantInputOffset": 0,
+                            "quantInputScale": 1,
+                            "quantType": 0,
+                            "zoomScaleValue": 1
+                        },
+                        "postNormParam": null
+                    },
+                    "inTensors": [
+                        "Bloom7bCommonLayer_3_internal_7",
+                        "Bloom7BFlashAttentionModel_weight_27",
+                        "Bloom7BFlashAttentionModel_weight_28"
+                    ],
+                    "outTensors": [
+                        "Bloom7bCommonLayer_3_internal_8"
+                    ]
+                },
+                {
+                    "opName": "MlpGateLayerV2_3_7",
+                    "opType": "MlpGateLayerV2",
+                    "param": "",
+                    "inTensors": [
+                        "Bloom7bCommonLayer_3_internal_8",
+                        "Bloom7BFlashAttentionModel_weight_29",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_weight_32",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_weight_30",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_weight_33",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6",
+                        "Bloom7BFlashAttentionModel_input_6"
+                    ],
+                    "outTensors": [
+                        "Bloom7bCommonLayer_3_internal_9"
+                    ],
+                    "internalTensors": [
+                        "MlpGateLayerV2_3_7_internal_0",
+                        "MlpGateLayerV2_3_7_internal_1"
+                    ],
+                    "nodes": [
+                        {
+                            "opName": "ParallelLinearBaseV2_3_7_0",
+                            "opType": "ParallelLinearBaseV2",
+                            "param": "",
+                            "inTensors": [
+                                "Bloom7bCommonLayer_3_internal_8",
+                                "Bloom7BFlashAttentionModel_weight_29",
+                                "Bloom7BFlashAttentionModel_weight_30",
+                                "Bloom7BFlashAttentionModel_input_6",
+                                "Bloom7BFlashAttentionModel_input_6",
+                                "Bloom7BFlashAttentionModel_input_6",
+                                "Bloom7BFlashAttentionModel_input_6"
+                            ],
+                            "outTensors": [
+                                "MlpGateLayerV2_3_7_internal_0"
+                            ],
+                            "internalTensors": [
+                                "ParallelLinearBaseV2_3_7_0_internal_0"
+                            ],
+                            "nodes": [
+                                {
+                                    "opName": "LinearOperation_3_7_0_0",
+                                    "opType": "LinearOperation",
+                                    "param": {
+                                        "hasBias": false,
+                                        "transposeA": false,
+                                        "transposeB": false
+                                    },
+                                    "inTensors": [
+                                        "Bloom7bCommonLayer_3_internal_8",
+                                        "Bloom7BFlashAttentionModel_weight_29"
+                                    ],
+                                    "outTensors": [
+                                        "ParallelLinearBaseV2_3_7_0_internal_0"
+                                    ]
+                                },
+                                {
+                                    "opName": "ElewiseOperation_3_7_0_1",
+                                    "opType": "ElewiseOperation",
+                                    "param": {
+                                        "elewiseType": 8,
+                                        "mulsParam": {
+                                            "varAttr": 0
+                                        },
+                                        "outTensorType": -1,
+                                        "quantParam": {
+                                            "inputOffset": 0,
+                                            "inputScale": 1
+                                        }
+                                    },
+                                    "inTensors": [
+                                        "ParallelLinearBaseV2_3_7_0_internal_0",
+                                        "Bloom7BFlashAttentionModel_weight_30"
+                                    ],
+                                    "outTensors": [
+                                        "MlpGateLayerV2_3_7_internal_0"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "opName": "ActivationOperation_3_7_1",
+                            "opType": "ActivationOperation",
+                            "param": {
+                                "activationType": 2,
+                                "dim": -1,
+                                "scale": 1
+                            },
+                            "inTensors": [
+                                "MlpGateLayerV2_3_7_internal_0"
+                            ],
+                            "outTensors": [
+                                "MlpGateLayerV2_3_7_internal_1"
+                            ]
+                        },
+                        {
+                            "opName": "ParallelLinearBaseV2_3_7_2",
+                            "opType": "ParallelLinearBaseV2",
+                            "param": "",
+                            "inTensors": [
+                                "MlpGateLayerV2_3_7_internal_1",
+                                "Bloom7BFlashAttentionModel_weight_32",
+                                "Bloom7BFlashAttentionModel_weight_33",
+                                "Bloom7BFlashAttentionModel_input_6",
+                                "Bloom7BFlashAttentionModel_input_6",
+                                "Bloom7BFlashAttentionModel_input_6",
+                                "Bloom7BFlashAttentionModel_input_6"
+                            ],
+                            "outTensors": [
+                                "Bloom7bCommonLayer_3_internal_9"
+                            ],
+                            "internalTensors": [
+                                "ParallelLinearBaseV2_3_7_2_internal_0"
+                            ],
+                            "nodes": [
+                                {
+                                    "opName": "LinearOperation_3_7_2_0",
+                                    "opType": "LinearOperation",
+                                    "param": {
+                                        "hasBias": false,
+                                        "transposeA": false,
+                                        "transposeB": false
+                                    },
+                                    "inTensors": [
+                                        "MlpGateLayerV2_3_7_internal_1",
+                                        "Bloom7BFlashAttentionModel_weight_32"
+                                    ],
+                                    "outTensors": [
+                                        "ParallelLinearBaseV2_3_7_2_internal_0"
+                                    ]
+                                },
+                                {
+                                    "opName": "ElewiseOperation_3_7_2_1",
+                                    "opType": "ElewiseOperation",
+                                    "param": {
+                                        "elewiseType": 8,
+                                        "mulsParam": {
+                                            "varAttr": 0
+                                        },
+                                        "outTensorType": -1,
+                                        "quantParam": {
+                                            "inputOffset": 0,
+                                            "inputScale": 1
+                                        }
+                                    },
+                                    "inTensors": [
+                                        "ParallelLinearBaseV2_3_7_2_internal_0",
+                                        "Bloom7BFlashAttentionModel_weight_33"
+                                    ],
+                                    "outTensors": [
+                                        "Bloom7bCommonLayer_3_internal_9"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "opName": "ElewiseOperation_3_8",
+                    "opType": "ElewiseOperation",
+                    "param": {
+                        "elewiseType": 8,
+                        "mulsParam": {
+                            "varAttr": 0
+                        },
+                        "outTensorType": -1,
+                        "quantParam": {
+                            "inputOffset": 0,
+                            "inputScale": 1
+                        }
+                    },
+                    "inTensors": [
+                        "Bloom7bCommonLayer_3_internal_9",
+                        "Bloom7bCommonLayer_3_internal_7"
+                    ],
+                    "outTensors": [
+                        "Bloom7BFlashAttentionModel_internal_3"
+                    ]
+                },
+                {
+                    "opName": "ElewiseOperation_3_9",
+                    "opType": "ElewiseOperation",
+                    "param": {
+                        "elewiseType": 2,
+                        "mulsParam": {
+                            "varAttr": 1
+                        },
+                        "outTensorType": -1,
+                        "quantParam": {
+                            "inputOffset": 0,
+                            "inputScale": 1
+                        }
+                    },
+                    "inTensors": [
+                        "Bloom7BFlashAttentionModel_internal_3"
+                    ],
+                    "outTensors": [
+                        "Bloom7BFlashAttentionModel_output_2"
+                    ]
+                },
+                {
+                    "opName": "ElewiseOperation_3_10",
+                    "opType": "ElewiseOperation",
+                    "param": {
+                        "elewiseType": 2,
+                        "mulsParam": {
+                            "varAttr": 1
+                        },
+                        "outTensorType": -1,
+                        "quantParam": {
+                            "inputOffset": 0,
+                            "inputScale": 1
+                        }
+                    },
+                    "inTensors": [
+                        "Bloom7BFlashAttentionModel_internal_3"
+                    ],
+                    "outTensors": [
+                        "Bloom7BFlashAttentionModel_output_3"
+                    ]
+                }
+            ]
+        }
+    ]
+}

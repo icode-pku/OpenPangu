@@ -1,0 +1,7 @@
+numpy >= 1.21.6
+psutil
+pandas
+openpyxl
+torch
+ml_dtypes
+en_dtypes

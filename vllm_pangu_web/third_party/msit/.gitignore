@@ -1,0 +1,21 @@
+.vscode
+**/modified_onnx
+**/__pycache__
+**/node_modules
+**/out
+.idea
+*.onnx
+*.npy
+*.csv
+**/app_analyze/headers
+**/build
+**/*.egg-info
+**/ait_transplt.log
+**/dist
+**/.idea
+**/.gradle
+onnx-modifier/python
+
+# DT check file
+.coverage
+xmlcov

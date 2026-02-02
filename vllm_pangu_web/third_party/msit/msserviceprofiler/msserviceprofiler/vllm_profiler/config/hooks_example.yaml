@@ -1,0 +1,47 @@
+# vLLM profiler 配置示例（纯数组格式）
+#
+# 一、文件命名与加载
+# - 建议命名：hooks_v{MAJOR_MINOR_PATCH}_{V0|V1}.yaml（如 hooks_v0_9_1_V1.yaml）
+# - 也可用环境变量 VLLM_PROFILER_CONFIG 指定完整路径，优先级更高
+#
+# 二、字段与策略
+# - symbol: Python 导入路径 + 属性链（如 "module.path:Class.method" 或 "module.path:function"）
+# - handler:
+#   - 省略或为 timer：使用默认耗时统计处理
+#   - "pkg.mod:func"：自定义处理函数（签名须为 (original_func, this, *args, **kwargs)），导入失败则回退 timer
+# - domain/name: 仅在使用 timer 或自定义 handler 时用于埋点
+# - min_version/max_version: 可选版本约束
+# - caller_filter: 可选，仅当由特定调用者触发时才生效
+# - attributes: 可选，自定义属性采集配置
+#   - expr 中直接使用参数名或 return
+#   - 支持管道操作 |：len(return) | str 等价于 str(len(return))
+#   - 支持 attr 操作：return[0] | attr input_ids 获取对象的 input_ids 属性
+#
+# 三、示例
+# 示例 A：自定义 handler（单一 symbol）
+- symbol: vllm.v1.core.kv_cache_manager:KVCacheManager.free
+  handler: vllm_profiler.config.custom_handler_example:kvcache_manager_free_example_handler
+  domain: Example
+  name: example_custom
+
+# 示例 B：省略 handler（默认 timer）
+- symbol: vllm.v1.engine.core:EngineCore.execute_model
+  domain: ModelExecute
+  name: EngineCoreExecute
+
+# 示例 C：带版本约束
+- symbol: vllm.v1.executor.abstract:Executor.execute_model
+  min_version: "0.9.1"
+  # 未指定 handler -> 默认 timer
+
+# 示例 D：带自定义属性采集
+- symbol: vllm.model_executor.layers.logits_processor:LogitsProcessor.forward
+  domain: ModelExecute
+  name: computing_logits
+  attributes:
+    - name: input_ids_len
+      expr: len(input_ids)
+    - name: logits_shape_str
+      expr: len(return) | str
+    - name: first_output_input_ids_len
+      expr: return[0] | attr input_ids | len

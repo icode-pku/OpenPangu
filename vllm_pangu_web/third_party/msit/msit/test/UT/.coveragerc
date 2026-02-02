@@ -1,0 +1,6 @@
+[run]
+omit = */test_*.py
+       setup.py
+       __init__.py
+       ../tests/*
+       ../../components/llm/msit_llm/transform/*

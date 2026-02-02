@@ -1,0 +1,162 @@
+mies_config:
+  ref:
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].dp
+      as: dp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].tp
+      as: tp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].cp
+      as: cp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].sp
+      as: sp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].pp
+      as: pp
+      default: 1
+    - from: BackendConfig.ModelDeployConfig.ModelConfig[0].worldSize
+      as: world_size
+    - from: BackendConfig.multiNodesInferEnabled
+      as: multi_nodes_infer_enabled
+
+  ref.world_size:
+    expected:
+      if: "${ref.multi_nodes_infer_enabled} == false"
+      then:
+        case: "int(${ref.dp}) * int(${ref.tp}) * int(${ref.cp}) * int(${ref.pp}) == ${ref.world_size}"
+        reason: "在非跨机场景下，并行策略要求保证dp * tp * cp * pp = worldSize，其中没配置的并行策略默认值为1"
+        severity: medium
+
+  ref.pp:
+    expected:
+      type: eq
+      value: 1
+    reason: "pp取值只能等于1"
+    severity: high
+
+  ref.sp:
+    expected:
+      type: enum
+      value: [1, "${ref.tp}"]
+    reason: "sp取值只能等于1或者等于tp取值"
+    severity: high
+
+  ServerConfig:
+    tokenTimeout:
+      expected:
+        type: eq
+        value: 600
+      reason: "tokenTimeout建议值为600，表示每token的超时时间，在测试推理性能时可以适当增大，不超过3600"
+      severity: low
+    e2eTimeout:
+      expected:
+        type: eq
+        value: 600
+      reason: "e2eTimeout建议值为600，表示端到端推理的超时时间，在测试推理性能时可以适当增大，不超过65535"
+      severity: low
+    httpsEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+    inferMode:
+      expected:
+        type: eq
+        value: "'standard'"
+      reason: "PD混部场景下，inferMode应该是standard"
+      severity: high
+    interCommTLSEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "如果确实配置了安全证书，建议开启为true，此条校验为提示"
+      severity: low
+  BackendConfig:
+    npuDeviceIds[0]:
+      expected:
+        len: ${ref.world_size}
+        contains_all: null
+    multiNodesInferEnabled:
+      expected:
+        type: eq
+        value: false
+      reason: "multiNodesInferEnabled表示服务跨机推理，请确认推理场景是否存在server示例跨机，如果没有跨机需求则需要关闭"
+      severity: low
+    ModelDeployConfig:
+      maxSeqLen:
+        expected:
+          type: ">="
+          value: ${BackendConfig.ModelDeployConfig.maxInputTokenLen}
+        reason: "maxSeqLen不应该小于maxInputTokenLen，表示输入token加输出token的上限"
+        severity: high
+      maxInputTokenLen:
+        expected:
+          type: ">="
+          value: 1
+        reason: "maxInputTokenLen应该大于等于1，表示输入token的上限"
+        severity: high
+      ModelConfig[0]:
+        modelWeightPath:
+          expected:
+            case:
+              type: path
+              value: "'exists'"
+            reason: "modelWeightPath需要配置为当前容器中挂载的模型权重路径"
+            severity: high
+        worldSize:
+          expected:
+            type: range
+            value: [1, 8]
+          reason: "Atlas 800I A2服务器上，单机PD分离场景下，worldSize取值范围为1到8"
+          severity: high
+        ignore_eos:
+          expected:
+            type: eq
+            value: false
+          reason: "ignore_eos表示是否忽略eos token，测试固定长度输出时可以设置为true"
+          severity: low
+    ScheduleConfig:
+      maxPrefillBatchSize:
+        expected:
+          type: ">="
+          value: 1
+        reason: "表示prefill的最大batch size，不能小于1"
+        severity: high
+      maxPrefillTokens:
+        expected:
+          type: ">="
+          value: ${BackendConfig.ModelDeployConfig.maxInputTokenLen}
+        reason: "maxPrefillTokens需要设置大于maxInputTokenLen，表示prefill最大token数"
+        severity: high
+      maxIterTimes:
+        expected:
+          type: range
+          value: [1, "${BackendConfig.ModelDeployConfig.maxSeqLen}"]
+        reason: "maxIterTimes应该大于等于1小于等于maxSeqLen"
+        severity: high
+
+env:
+  MINDIE_LOG_TO_FILE:
+    expected:
+      type: enum
+      value: ["'1'", "'true'"]
+    reason: "建议将MindIE日志写入文件，便于排查问题"
+    severity: low
+  MINDIE_LOG_TO_STDOUT:
+    expected:
+      type: enum
+      value: ["'1'", "'true'"]
+    reason: "建议将MindIE日志打屏，便于查看程序运行状态"
+    severity: low
+  MINDIE_LOG_LEVEL:
+    expected:
+      if: "${.} != None"
+      then:
+        case:
+          type: enum
+          value: ["'info'", "'INFO'"]
+        reason: "如果配置了MINDIE_LOG_LEVEL，建议设置为info或INFO，表示日志级别为info"
+        severity: low
+  

@@ -1,0 +1,58 @@
+{
+    "name": "root.transformer.h.2",
+    "type": "BloomLayer",
+    "children": [
+        {
+            "name": "root.transformer.h.2.input_layernorm",
+            "type": "LayerNorm",
+            "children": []
+        },
+        {
+            "name": "root.transformer.h.2.self_attention",
+            "type": "BloomAttention",
+            "children": [
+                {
+                    "name": "root.transformer.h.2.self_attention.query_key_value",
+                    "type": "Linear",
+                    "children": []
+                },
+                {
+                    "name": "root.transformer.h.2.self_attention.attention_dropout",
+                    "type": "Dropout",
+                    "children": []
+                },
+                {
+                    "name": "root.transformer.h.2.self_attention.dense",
+                    "type": "Linear",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "root.transformer.h.2.post_attention_layernorm",
+            "type": "LayerNorm",
+            "children": []
+        },
+        {
+            "name": "root.transformer.h.2.mlp",
+            "type": "BloomMLP",
+            "children": [
+                {
+                    "name": "root.transformer.h.2.mlp.dense_h_to_4h",
+                    "type": "Linear",
+                    "children": []
+                },
+                {
+                    "name": "root.transformer.h.2.mlp.gelu_impl",
+                    "type": "BloomGelu",
+                    "children": []
+                },
+                {
+                    "name": "root.transformer.h.2.mlp.dense_4h_to_h",
+                    "type": "Linear",
+                    "children": []
+                }
+            ]
+        }
+    ]
+}
